@@ -1,0 +1,11 @@
+﻿@model IReadOnlyList<PlayerStatisticDto>
+@{
+    ViewData["Title"] = "Estatísticas de jogadores";
+}
+<h1 class="h3 mb-3">Jogadores</h1>
+<div class="list-group shadow-sm">
+    @foreach (var player in Model)
+    {
+        <div class="list-group-item d-flex justify-content-between align-items-center"><div><strong>@player.PlayerName</strong><div class="text-muted small">@player.TeamName</div></div><div class="text-end"><div>@player.Goals golos</div><small>@player.PlayerOfTheMatchVotes votos</small></div></div>
+    }
+</div>

@@ -13,6 +13,11 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
     public DbSet<Team> Teams => Set<Team>();
     public DbSet<Player> Players => Set<Player>();
     public DbSet<Venue> Venues => Set<Venue>();
+    public DbSet<Match> Matches => Set<Match>();
+    public DbSet<GoalEvent> GoalEvents => Set<GoalEvent>();
+    public DbSet<PlayerOfTheMatchVote> PlayerOfTheMatchVotes => Set<PlayerOfTheMatchVote>();
+    public DbSet<KnockoutAssignment> KnockoutAssignments => Set<KnockoutAssignment>();
+    public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

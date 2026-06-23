@@ -21,6 +21,8 @@ public sealed class AgeGroup : BaseEntity
     public int AdvancingTeamsPerGroup { get; set; } = 2;
     public ICollection<Group> Groups { get; set; } = new List<Group>();
     public ICollection<Team> Teams { get; set; } = new List<Team>();
+    public ICollection<Match> Matches { get; set; } = new List<Match>();
+    public ICollection<KnockoutAssignment> KnockoutAssignments { get; set; } = new List<KnockoutAssignment>();
     public string TieBreakerOrder { get; set; } = string.Join(',', TieBreaker.Points, TieBreaker.HeadToHead, TieBreaker.GoalDifference, TieBreaker.GoalsFor, TieBreaker.GoalsAgainst, TieBreaker.ManualDecision);
 
     public void Validate()

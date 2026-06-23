@@ -1,0 +1,16 @@
+﻿@model IReadOnlyList<StandingDto>
+@{
+    ViewData["Title"] = "Classificação";
+}
+<h1 class="h3 mb-3">Classificação</h1>
+<div class="table-responsive card shadow-sm">
+    <table class="table table-sm align-middle mb-0">
+        <thead><tr><th>#</th><th>Equipa</th><th>J</th><th>V</th><th>E</th><th>D</th><th>GM</th><th>GS</th><th>DG</th><th>Pts</th></tr></thead>
+        <tbody>
+            @foreach (var row in Model)
+            {
+                <tr><td>@row.Position</td><td>@row.TeamName</td><td>@row.Played</td><td>@row.Wins</td><td>@row.Draws</td><td>@row.Losses</td><td>@row.GoalsFor</td><td>@row.GoalsAgainst</td><td>@row.GoalDifference</td><td><strong>@row.Points</strong></td></tr>
+            }
+        </tbody>
+    </table>
+</div>

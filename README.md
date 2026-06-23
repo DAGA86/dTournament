@@ -4,7 +4,7 @@ Aplicação web para gestão mobile-first de torneios de futebol de formação.
 
 ## Estado atual
 
-O repositório estava vazio, contendo apenas `.gitkeep`. A Fase 1 criou a estrutura base da solução, autenticação com ASP.NET Core Identity, entidades iniciais de torneios e escalões, EF Core Code First, primeira migration manual, CRUD inicial de torneios, localização base para `pt-PT`, Bootstrap 5 e testes unitários iniciais. A Fase 2 acrescenta equipas, jogadores, campos, validações de idade/números, repositórios, serviços, controllers e views mobile-first para estes dados.
+O repositório estava vazio, contendo apenas `.gitkeep`. A Fase 1 criou a estrutura base da solução, autenticação com ASP.NET Core Identity, entidades iniciais de torneios e escalões, EF Core Code First, primeira migration manual, CRUD inicial de torneios, localização base para `pt-PT`, Bootstrap 5 e testes unitários iniciais. A Fase 2 acrescenta equipas, jogadores, campos, validações de idade/números, repositórios, serviços, controllers e views mobile-first para estes dados. A Fase 3 acrescenta a fundação de calendário, jogos agendados, geração todos-contra-todos e geração com número fixo de jogos por equipa. A Fase 4 acrescenta gestão operacional de jogos, golos, anulação de golos, melhores jogadores por equipa e notificações SignalR por jogo. A Fase 5 acrescenta classificações dinâmicas, estatísticas de equipas, melhores marcadores e ranking de votos de melhor jogador. A Fase 6 acrescenta fundação de fase final, criação idempotente de meias-finais, progressão para final/terceiro lugar e decisão por penáltis. A Fase 7 acrescenta auditoria, hardening de segurança inicial, PWA básico e documentação final de estado.
 
 ## Plano por fases
 
@@ -78,4 +78,4 @@ dotnet test TournamentManager.sln
 
 - A CLI `.NET` não está disponível neste contentor, por isso build, restore, migrations geradas automaticamente e testes não puderam ser executados localmente.
 - A migration inicial foi criada manualmente e deve ser validada num ambiente com SDK .NET 8.
-- As fases 3-7 ainda não estão implementadas.
+- As fases planeadas iniciais estão implementadas como fundação funcional; ainda requerem validação completa em ambiente .NET/SQL Server.

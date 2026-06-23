@@ -1,0 +1,28 @@
+﻿@model MatchControlDto
+@{
+    ViewData["Title"] = "Gestão do jogo";
+}
+<div class="card shadow-sm mb-3"><div class="card-body text-center"><h1 class="h4">@Model.HomeTeamName vs @Model.AwayTeamName</h1><div class="display-4 fw-bold">@Model.HomeScore - @Model.AwayScore</div><span class="badge bg-primary">@Model.Status</span></div></div>
+<div class="row g-2 mb-3">
+    <div class="col-6"><form asp-action="Start" method="post"><input type="hidden" name="id" value="@Model.Id" /><button class="btn btn-success btn-lg w-100">Iniciar/Retomar</button></form></div>
+    <div class="col-6"><form asp-action="Pause" method="post"><input type="hidden" name="id" value="@Model.Id" /><button class="btn btn-warning btn-lg w-100">Pausar</button></form></div>
+    <div class="col-12"><form asp-action="Finish" method="post" onsubmit="return confirm('Tem a certeza que pretende terminar o jogo?');"><input type="hidden" name="id" value="@Model.Id" /><button class="btn btn-danger btn-lg w-100">Terminar jogo</button></form></div>
+</div>
+<div class="card shadow-sm mb-3"><div class="card-body"><h2 class="h5">Registar golo</h2><form asp-action="RegisterGoal" method="post" class="vstack gap-2"><input type="hidden" name="MatchId" value="@Model.Id" /><input name="TeamId" class="form-control" placeholder="Id da equipa" /><input name="PlayerId" class="form-control" placeholder="Id do jogador" /><input name="MatchMinute" class="form-control" type="number" min="0" placeholder="Minuto" /><div class="form-check"><input name="IsOwnGoal" value="true" type="checkbox" class="form-check-input" /><label class="form-check-label">Autogolo</label></div><button class="btn btn-primary btn-lg">Registar</button></form></div></div>
+<div class="card shadow-sm">
+    <div class="card-body">
+        <h2 class="h5">Eventos</h2><div class="list-group">
+        @foreach (var goal in Model.Goals)
+        {
+            <div class="list-group-item"><div class="d-flex justify-content-between"><strong>@goal.MatchMinute' @goal.PlayerName</strong><span>@goal.TeamName</span></div><small class="text-muted">@(goal.IsOwnGoal ? "Autogolo" : "Golo") · @(goal.IsActive ? "Ativo" : "Anulado")</small>@if (goal.IsActive) {
+                <form asp-action="VoidGoal" method="post" class="mt-2" onsubmit="return confirm('Anular este golo?');"><input type="hidden" name="id" value="@goal.Id" /><input type="hidden" name="matchId" value="@Model.Id" /><button class="btn btn-sm btn-outline-danger">Anular</button></form>
+            }
+        </div>
+    }
+</div>
+</div>
+</div>
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
+    <script>const connection = new signalR.HubConnectionBuilder().withUrl('/hubs/tournament-updates').build();connection.on('MatchChanged', () => window.location.reload());connection.start().then(() => connection.invoke('JoinMatchGroup', '@Model.Id'));</script>
+}

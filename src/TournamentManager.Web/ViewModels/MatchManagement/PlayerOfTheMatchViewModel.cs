@@ -1,0 +1,10 @@
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace TournamentManager.Web.ViewModels.MatchManagement;
+
+public sealed class PlayerOfTheMatchViewModel
+{
+    [Required] public Guid MatchId { get; set; }
+    [Required] public Guid TeamId { get; set; }
+    [Required] public Guid PlayerId { get; set; }
+}

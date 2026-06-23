@@ -1,0 +1,11 @@
+﻿@model IReadOnlyList<TournamentManager.Domain.Entities.AuditLog>
+@{
+    ViewData["Title"] = "Auditoria";
+}
+<h1 class="h3 mb-3">Auditoria</h1>
+<div class="list-group shadow-sm">
+    @foreach (var item in Model)
+    {
+        <div class="list-group-item"><div class="d-flex justify-content-between"><strong>@item.OperationType</strong><small>@item.OccurredAtUtc.ToString("dd/MM/yyyy HH:mm")</small></div><div>@item.EntityName · @item.EntityId</div><small class="text-muted">@item.UserId</small></div>
+    }
+</div>

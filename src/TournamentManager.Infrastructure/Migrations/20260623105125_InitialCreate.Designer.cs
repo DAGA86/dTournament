@@ -12,8 +12,8 @@ using TournamentManager.Infrastructure.Data;
 namespace TournamentManager.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260623092801_AddTeamsPlayersAndVenues")]
-    partial class AddTeamsPlayersAndVenues
+    [Migration("20260623105125_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -221,6 +221,117 @@ namespace TournamentManager.Infrastructure.Migrations
                     b.ToTable("AgeGroups", (string)null);
                 });
 
+            modelBuilder.Entity("TournamentManager.Domain.Entities.AuditLog", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("EntityId")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("nvarchar(120)");
+
+                    b.Property<string>("EntityName")
+                        .IsRequired()
+                        .HasMaxLength(160)
+                        .HasColumnType("nvarchar(160)");
+
+                    b.Property<string>("NewValues")
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
+
+                    b.Property<DateTimeOffset>("OccurredAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("OperationType")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("nvarchar(120)");
+
+                    b.Property<string>("PreviousValues")
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
+
+                    b.Property<string>("Reason")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<DateTimeOffset?>("UpdatedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OccurredAtUtc");
+
+                    b.HasIndex("EntityName", "EntityId");
+
+                    b.ToTable("AuditLogs", (string)null);
+                });
+
+            modelBuilder.Entity("TournamentManager.Domain.Entities.GoalEvent", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsOwnGoal")
+                        .HasColumnType("bit");
+
+                    b.Property<Guid>("MatchId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("MatchMinute")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("PlayerId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("RecordedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("RecordedByUserId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.Property<Guid>("TeamId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset?>("UpdatedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PlayerId");
+
+                    b.HasIndex("TeamId");
+
+                    b.HasIndex("MatchId", "RecordedAtUtc");
+
+                    b.ToTable("GoalEvents", (string)null);
+                });
+
             modelBuilder.Entity("TournamentManager.Domain.Entities.Group", b =>
                 {
                     b.Property<Guid>("Id")
@@ -250,6 +361,149 @@ namespace TournamentManager.Infrastructure.Migrations
                         .IsUnique();
 
                     b.ToTable("Groups", (string)null);
+                });
+
+            modelBuilder.Entity("TournamentManager.Domain.Entities.KnockoutAssignment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("AgeGroupId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<int>("Phase")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SlotNumber")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Source")
+                        .IsRequired()
+                        .HasMaxLength(160)
+                        .HasColumnType("nvarchar(160)");
+
+                    b.Property<Guid>("TeamId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset?>("UpdatedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TeamId");
+
+                    b.HasIndex("AgeGroupId", "Phase", "SlotNumber")
+                        .IsUnique();
+
+                    b.ToTable("KnockoutAssignments", (string)null);
+                });
+
+            modelBuilder.Entity("TournamentManager.Domain.Entities.Match", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset?>("ActualEndUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset?>("ActualStartUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("AgeGroupId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int?>("AwayExtraTimeScore")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("AwayPenaltyScore")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("AwayRegularTimeScore")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("AwayScore")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("AwayTeamId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid?>("GroupId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int?>("HomeExtraTimeScore")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("HomePenaltyScore")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("HomeRegularTimeScore")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("HomeScore")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("HomeTeamId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<int>("Phase")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PlannedDurationMinutes")
+                        .HasColumnType("int");
+
+                    b.Property<int>("RoundNumber")
+                        .HasColumnType("int");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.Property<DateTimeOffset?>("ScheduledStartUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("TournamentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset?>("UpdatedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid?>("VenueId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AwayTeamId");
+
+                    b.HasIndex("GroupId");
+
+                    b.HasIndex("HomeTeamId");
+
+                    b.HasIndex("ScheduledStartUtc");
+
+                    b.HasIndex("TournamentId");
+
+                    b.HasIndex("VenueId");
+
+                    b.HasIndex("AgeGroupId", "RoundNumber");
+
+                    b.ToTable("Matches", (string)null);
                 });
 
             modelBuilder.Entity("TournamentManager.Domain.Entities.Player", b =>
@@ -306,6 +560,50 @@ namespace TournamentManager.Infrastructure.Migrations
                         .HasFilter("[ShirtNumber] IS NOT NULL");
 
                     b.ToTable("Players", (string)null);
+                });
+
+            modelBuilder.Entity("TournamentManager.Domain.Entities.PlayerOfTheMatchVote", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("MatchId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("PlayerId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.Property<string>("SelectedByUserId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<Guid>("TeamId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset?>("UpdatedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PlayerId");
+
+                    b.HasIndex("TeamId");
+
+                    b.HasIndex("MatchId", "TeamId")
+                        .IsUnique();
+
+                    b.ToTable("PlayerOfTheMatchVotes", (string)null);
                 });
 
             modelBuilder.Entity("TournamentManager.Domain.Entities.Team", b =>
@@ -584,6 +882,33 @@ namespace TournamentManager.Infrastructure.Migrations
                     b.Navigation("Tournament");
                 });
 
+            modelBuilder.Entity("TournamentManager.Domain.Entities.GoalEvent", b =>
+                {
+                    b.HasOne("TournamentManager.Domain.Entities.Match", "Match")
+                        .WithMany("GoalEvents")
+                        .HasForeignKey("MatchId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("TournamentManager.Domain.Entities.Player", "Player")
+                        .WithMany()
+                        .HasForeignKey("PlayerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("TournamentManager.Domain.Entities.Team", "Team")
+                        .WithMany()
+                        .HasForeignKey("TeamId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Match");
+
+                    b.Navigation("Player");
+
+                    b.Navigation("Team");
+                });
+
             modelBuilder.Entity("TournamentManager.Domain.Entities.Group", b =>
                 {
                     b.HasOne("TournamentManager.Domain.Entities.AgeGroup", "AgeGroup")
@@ -595,6 +920,74 @@ namespace TournamentManager.Infrastructure.Migrations
                     b.Navigation("AgeGroup");
                 });
 
+            modelBuilder.Entity("TournamentManager.Domain.Entities.KnockoutAssignment", b =>
+                {
+                    b.HasOne("TournamentManager.Domain.Entities.AgeGroup", "AgeGroup")
+                        .WithMany("KnockoutAssignments")
+                        .HasForeignKey("AgeGroupId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("TournamentManager.Domain.Entities.Team", "Team")
+                        .WithMany()
+                        .HasForeignKey("TeamId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("AgeGroup");
+
+                    b.Navigation("Team");
+                });
+
+            modelBuilder.Entity("TournamentManager.Domain.Entities.Match", b =>
+                {
+                    b.HasOne("TournamentManager.Domain.Entities.AgeGroup", "AgeGroup")
+                        .WithMany("Matches")
+                        .HasForeignKey("AgeGroupId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("TournamentManager.Domain.Entities.Team", "AwayTeam")
+                        .WithMany()
+                        .HasForeignKey("AwayTeamId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("TournamentManager.Domain.Entities.Group", "Group")
+                        .WithMany()
+                        .HasForeignKey("GroupId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("TournamentManager.Domain.Entities.Team", "HomeTeam")
+                        .WithMany()
+                        .HasForeignKey("HomeTeamId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("TournamentManager.Domain.Entities.Tournament", "Tournament")
+                        .WithMany()
+                        .HasForeignKey("TournamentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("TournamentManager.Domain.Entities.Venue", "Venue")
+                        .WithMany()
+                        .HasForeignKey("VenueId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("AgeGroup");
+
+                    b.Navigation("AwayTeam");
+
+                    b.Navigation("Group");
+
+                    b.Navigation("HomeTeam");
+
+                    b.Navigation("Tournament");
+
+                    b.Navigation("Venue");
+                });
+
             modelBuilder.Entity("TournamentManager.Domain.Entities.Player", b =>
                 {
                     b.HasOne("TournamentManager.Domain.Entities.Team", "Team")
@@ -602,6 +995,33 @@ namespace TournamentManager.Infrastructure.Migrations
                         .HasForeignKey("TeamId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.Navigation("Team");
+                });
+
+            modelBuilder.Entity("TournamentManager.Domain.Entities.PlayerOfTheMatchVote", b =>
+                {
+                    b.HasOne("TournamentManager.Domain.Entities.Match", "Match")
+                        .WithMany("PlayerOfTheMatchVotes")
+                        .HasForeignKey("MatchId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("TournamentManager.Domain.Entities.Player", "Player")
+                        .WithMany()
+                        .HasForeignKey("PlayerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("TournamentManager.Domain.Entities.Team", "Team")
+                        .WithMany()
+                        .HasForeignKey("TeamId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Match");
+
+                    b.Navigation("Player");
 
                     b.Navigation("Team");
                 });
@@ -628,12 +1048,23 @@ namespace TournamentManager.Infrastructure.Migrations
                 {
                     b.Navigation("Groups");
 
+                    b.Navigation("KnockoutAssignments");
+
+                    b.Navigation("Matches");
+
                     b.Navigation("Teams");
                 });
 
             modelBuilder.Entity("TournamentManager.Domain.Entities.Group", b =>
                 {
                     b.Navigation("Teams");
+                });
+
+            modelBuilder.Entity("TournamentManager.Domain.Entities.Match", b =>
+                {
+                    b.Navigation("GoalEvents");
+
+                    b.Navigation("PlayerOfTheMatchVotes");
                 });
 
             modelBuilder.Entity("TournamentManager.Domain.Entities.Team", b =>
