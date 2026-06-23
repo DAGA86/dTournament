@@ -1,11 +1,20 @@
-﻿@model MatchControlDto
+@model MatchControlDto
 @{
     ViewData["Title"] = "Gestão do jogo";
 }
-<div class="card shadow-sm mb-3"><div class="card-body text-center"><h1 class="h4">@Model.HomeTeamName vs @Model.AwayTeamName</h1><div class="display-4 fw-bold">@Model.HomeScore - @Model.AwayScore</div><div class="display-6" id="match-clock" data-seconds="@Model.CurrentElapsedSeconds" data-running="@(Model.Status == TournamentManager.Domain.Enums.MatchStatus.InProgress ? "true" : "false")">00:00</div><span class="badge bg-primary">@Model.Status</span></div></div>
+<div class="card shadow-sm mb-3"><div class="card-body text-center"><h1 class="h4">@Model.HomeTeamName vs @Model.AwayTeamName</h1><div class="display-4 fw-bold">@Model.HomeScore - @Model.AwayScore</div><div class="display-6">
+            <span id="match-clock" data-seconds="@Model.CurrentElapsedSeconds" data-running="@(Model.Status == TournamentManager.Domain.Enums.MatchStatus.InProgress ? "true" : "false")">00:00</span>
+            @if (Model.PlannedPeriodCount > 1)
+            {
+                <span class="fs-5 text-muted" id="match-period">@(Model.CurrentPeriodNumber).ª parte</span>
+            }
+        </div><span class="badge bg-primary">@Model.Status</span></div></div>
 <div class="row g-2 mb-3">
     <div class="col-6"><form asp-action="Start" method="post"><input type="hidden" name="id" value="@Model.Id" /><button class="btn btn-success btn-lg w-100">Iniciar/Retomar</button></form></div>
-    <div class="col-6"><form asp-action="Pause" method="post"><input type="hidden" name="id" value="@Model.Id" /><button class="btn btn-warning btn-lg w-100">Intervalo</button></form></div>
+    @if (Model.Status == TournamentManager.Domain.Enums.MatchStatus.InProgress && Model.PlannedPeriodCount > 1 && Model.CurrentPeriodNumber < Model.PlannedPeriodCount)
+    {
+        <div class="col-6"><form asp-action="Pause" method="post"><input type="hidden" name="id" value="@Model.Id" /><button class="btn btn-warning btn-lg w-100">Intervalo</button></form></div>
+    }
 </div>
 <form asp-action="RegisterGoal" method="post" class="vstack gap-2">
     <div class="card shadow-sm mb-3">
@@ -13,19 +22,6 @@
             <h2 class="h5">Registar golo</h2>
             <input type="hidden" name="MatchId" value="@Model.Id" />
             <select name="TeamId" class="form-select"><option value="@Model.HomeTeamId">@Model.HomeTeamName</option><option value="@Model.AwayTeamId">@Model.AwayTeamName</option></select>
-            @if (Model.PlannedPeriodCount > 1)
-            {
-                <select name="PeriodNumber" class="form-select" aria-label="Parte do jogo">
-                    @for (var period = 1; period <= Model.PlannedPeriodCount; period++)
-                    {
-                        <option value="@period">@(period).ª parte (@(((period - 1) * Model.PlannedPeriodDurationMinutes) + 1)-@Math.Min(period * Model.PlannedPeriodDurationMinutes, Model.PlannedDurationMinutes) min)</option>
-                    }
-                </select>
-            }
-            else
-            {
-                <input type="hidden" name="PeriodNumber" value="1" />
-            }
             <select name="PlayerId" class="form-select">
                 <optgroup label="@Model.HomeTeamName">
                     @foreach (var player in Model.HomePlayers)
@@ -105,9 +101,12 @@
         </div>
     </div>
 </div>
-<div class="row g-2 mb-3">
-    <div class="col-12"><form asp-action="Finish" method="post" onsubmit="return confirm('Tem a certeza que pretende terminar o jogo?');"><input type="hidden" name="id" value="@Model.Id" /><button class="btn btn-danger btn-lg w-100">Terminar jogo</button></form></div>
-</div>
+@if (Model.PlannedPeriodCount == 1 || Model.CurrentPeriodNumber >= Model.PlannedPeriodCount)
+{
+    <div class="row g-2 mb-3">
+        <div class="col-12"><form asp-action="Finish" method="post" onsubmit="return confirm('Tem a certeza que pretende terminar o jogo?');"><input type="hidden" name="id" value="@Model.Id" /><button class="btn btn-danger btn-lg w-100">Terminar jogo</button></form></div>
+    </div>
+}
 @section Scripts {
     <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
     <script>const clock=document.getElementById('match-clock');let seconds=parseInt(clock.dataset.seconds||'0',10);const render=()=>{const m=Math.floor(seconds/60).toString().padStart(2,'0');const s=(seconds%60).toString().padStart(2,'0');clock.textContent=`${m}:${s}`};render();if(clock.dataset.running==='true'){setInterval(()=>{seconds++;render();},1000)}const connection = new signalR.HubConnectionBuilder().withUrl('/hubs/tournament-updates').build();connection.on('MatchChanged', () => window.location.reload());connection.start().then(() => connection.invoke('JoinMatchGroup', '@Model.Id'));</script>

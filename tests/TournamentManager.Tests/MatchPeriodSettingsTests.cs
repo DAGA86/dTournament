@@ -40,4 +40,22 @@ public sealed class MatchPeriodSettingsTests
         Assert.Equal(15, match.NormalizeMatchMinute(16, periodNumber: 1));
         Assert.Equal(30, match.NormalizeMatchMinute(32, periodNumber: 2));
     }
+
+    [Fact]
+    public void Match_GetCurrentPeriodNumber_Uses_Persisted_Period_Not_Elapsed_Playing_Time()
+    {
+        var start = DateTimeOffset.UtcNow.AddMinutes(-16);
+        var match = new Match { ActualStartUtc = start, PlannedDurationMinutes = 30, PlannedPeriodCount = 2, CurrentPeriodNumber = 1 };
+
+        Assert.Equal(1, match.GetCurrentPeriodNumber(start.AddMinutes(16)));
+    }
+
+    [Fact]
+    public void Match_GetCurrentMatchMinute_Uses_Current_Persisted_Period_Automatically()
+    {
+        var start = DateTimeOffset.UtcNow.AddMinutes(-16);
+        var match = new Match { ActualStartUtc = start, PlannedDurationMinutes = 30, PlannedPeriodCount = 2, CurrentPeriodNumber = 1 };
+
+        Assert.Equal(15, match.GetCurrentMatchMinute(start.AddMinutes(16)));
+    }
 }

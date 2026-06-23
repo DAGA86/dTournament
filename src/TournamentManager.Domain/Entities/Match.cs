@@ -22,6 +22,7 @@ public sealed class Match : BaseEntity
     public int PlannedDurationMinutes { get; set; } = 20;
     public int PlannedPeriodCount { get; set; } = 1;
     public int HalfTimeBreakMinutes { get; set; }
+    public int CurrentPeriodNumber { get; set; } = 1;
     public MatchStatus Status { get; set; } = MatchStatus.Scheduled;
     public DateTimeOffset? ActualStartUtc { get; set; }
     public DateTimeOffset? ActualEndUtc { get; set; }
@@ -70,7 +71,9 @@ public sealed class Match : BaseEntity
 
     public int PlannedPeriodDurationMinutes => PlannedPeriodCount <= 0 ? PlannedDurationMinutes : (int)Math.Ceiling((double)PlannedDurationMinutes / PlannedPeriodCount);
 
-    public int GetCurrentMatchMinute(DateTimeOffset nowUtc) => GetCurrentMatchMinute(nowUtc, 1);
+    public int GetCurrentPeriodNumber(DateTimeOffset nowUtc) => Math.Clamp(CurrentPeriodNumber, 1, Math.Max(PlannedPeriodCount, 1));
+
+    public int GetCurrentMatchMinute(DateTimeOffset nowUtc) => GetCurrentMatchMinute(nowUtc, GetCurrentPeriodNumber(nowUtc));
 
     public int GetCurrentMatchMinute(DateTimeOffset nowUtc, int periodNumber) => NormalizeMatchMinute((int)Math.Floor(GetElapsedPlayingTime(nowUtc).TotalMinutes), periodNumber);
 
@@ -96,5 +99,6 @@ public sealed class Match : BaseEntity
         if (PlannedDurationMinutes <= 0) throw new InvalidOperationException("Planned duration must be greater than zero.");
         if (PlannedPeriodCount is < 1 or > 2) throw new InvalidOperationException("Planned period count must be one or two.");
         if (HalfTimeBreakMinutes < 0) throw new InvalidOperationException("Half-time break cannot be negative.");
+        if (CurrentPeriodNumber < 1 || CurrentPeriodNumber > PlannedPeriodCount) throw new InvalidOperationException("Current period number must be within the planned period range.");
     }
 }
