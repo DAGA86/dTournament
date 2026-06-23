@@ -68,14 +68,33 @@ public sealed class Match : BaseEntity
         return TimeSpan.FromSeconds(elapsedSeconds);
     }
 
-    public int GetCurrentMatchMinute(DateTimeOffset nowUtc) => Math.Max(0, (int)Math.Floor(GetElapsedPlayingTime(nowUtc).TotalMinutes));
+    public int PlannedPeriodDurationMinutes => PlannedPeriodCount <= 0 ? PlannedDurationMinutes : (int)Math.Ceiling((double)PlannedDurationMinutes / PlannedPeriodCount);
+
+    public int GetCurrentMatchMinute(DateTimeOffset nowUtc) => GetCurrentMatchMinute(nowUtc, 1);
+
+    public int GetCurrentMatchMinute(DateTimeOffset nowUtc, int periodNumber) => NormalizeMatchMinute((int)Math.Floor(GetElapsedPlayingTime(nowUtc).TotalMinutes), periodNumber);
+
+    public int NormalizeMatchMinute(int elapsedMinute, int periodNumber = 1)
+    {
+        if (elapsedMinute <= 0) return 0;
+        if (PlannedPeriodCount <= 1) return Math.Min(elapsedMinute, PlannedDurationMinutes);
+
+        var periodDuration = PlannedPeriodDurationMinutes;
+        if (periodDuration <= 0) return Math.Min(elapsedMinute, PlannedDurationMinutes);
+
+        var normalizedPeriod = Math.Clamp(periodNumber, 1, PlannedPeriodCount);
+        var periodStartMinute = (normalizedPeriod - 1) * periodDuration;
+        var periodEndMinute = Math.Min(periodStartMinute + periodDuration, PlannedDurationMinutes);
+
+        return Math.Clamp(elapsedMinute, periodStartMinute, periodEndMinute);
+    }
 
     public void Validate()
     {
         if (HomeTeamId == AwayTeamId) throw new InvalidOperationException("A team cannot play against itself.");
         if (RoundNumber <= 0) throw new InvalidOperationException("Round number must be greater than zero.");
         if (PlannedDurationMinutes <= 0) throw new InvalidOperationException("Planned duration must be greater than zero.");
-        if (PlannedPeriodCount < 1) throw new InvalidOperationException("Planned period count must be greater than zero.");
+        if (PlannedPeriodCount is < 1 or > 2) throw new InvalidOperationException("Planned period count must be one or two.");
         if (HalfTimeBreakMinutes < 0) throw new InvalidOperationException("Half-time break cannot be negative.");
     }
 }

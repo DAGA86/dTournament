@@ -29,7 +29,7 @@ public sealed class AgeGroup : BaseEntity
     public void Validate()
     {
         if (MatchDurationMinutes <= 0) throw new InvalidOperationException("Match duration must be greater than zero.");
-        if (NumberOfPeriods < 1) throw new InvalidOperationException("Number of periods must be greater than zero.");
+        if (NumberOfPeriods is < 1 or > 2) throw new InvalidOperationException("Number of periods must be one or two.");
         if (HalfTimeBreakMinutes < 0) throw new InvalidOperationException("Half-time break cannot be negative.");
         if (BirthYearFrom.HasValue && BirthYearTo.HasValue && BirthYearFrom > BirthYearTo) throw new InvalidOperationException("The first birth year cannot be greater than the last birth year.");
         if (RoundRobinLegs is < 1 or > 2) throw new InvalidOperationException("Round robin legs must be one or two.");

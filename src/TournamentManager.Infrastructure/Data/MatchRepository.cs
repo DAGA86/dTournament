@@ -20,7 +20,7 @@ public sealed class MatchRepository(ApplicationDbContext dbContext) : IMatchRepo
         .Include(x => x.PlayerOfTheMatchVotes).ThenInclude(x => x.Player).ThenInclude(x => x!.Team)
         .Where(x => x.TournamentId == tournamentId && x.Status == TournamentManager.Domain.Enums.MatchStatus.Finished)
         .ToListAsync(cancellationToken);
-    public Task<Match?> GetForManagementAsync(Guid matchId, CancellationToken cancellationToken = default) => dbContext.Matches.Include(x => x.HomeTeam).Include(x => x.AwayTeam).Include(x => x.GoalEvents).ThenInclude(x => x.Team).Include(x => x.GoalEvents).ThenInclude(x => x.Player).Include(x => x.PlayerOfTheMatchVotes).FirstOrDefaultAsync(x => x.Id == matchId, cancellationToken);
+    public Task<Match?> GetForManagementAsync(Guid matchId, CancellationToken cancellationToken = default) => dbContext.Matches.Include(x => x.HomeTeam).ThenInclude(x => x!.Players).Include(x => x.AwayTeam).ThenInclude(x => x!.Players).Include(x => x.GoalEvents).ThenInclude(x => x.Team).Include(x => x.GoalEvents).ThenInclude(x => x.Player).Include(x => x.PlayerOfTheMatchVotes).FirstOrDefaultAsync(x => x.Id == matchId, cancellationToken);
     public Task<bool> HasMatchesForAgeGroupAsync(Guid ageGroupId, CancellationToken cancellationToken = default) => dbContext.Matches.AnyAsync(x => x.AgeGroupId == ageGroupId, cancellationToken);
     public async Task AddRangeAsync(IEnumerable<Match> matches, CancellationToken cancellationToken = default) => await dbContext.Matches.AddRangeAsync(matches, cancellationToken);
     public async Task AddAsync(Match match, CancellationToken cancellationToken = default) => await dbContext.Matches.AddAsync(match, cancellationToken);
