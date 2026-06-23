@@ -77,19 +77,38 @@ public sealed class Match : BaseEntity
 
     public int GetCurrentMatchMinute(DateTimeOffset nowUtc, int periodNumber) => NormalizeMatchMinute((int)Math.Floor(GetElapsedPlayingTime(nowUtc).TotalMinutes), periodNumber);
 
+    public string FormatMatchMinute(int matchMinute, int periodNumber)
+    {
+        var normalizedPeriod = Math.Clamp(periodNumber, 1, Math.Max(PlannedPeriodCount, 1));
+        var periodEndMinute = PlannedPeriodCount <= 1
+            ? PlannedDurationMinutes
+            : Math.Min(normalizedPeriod * PlannedPeriodDurationMinutes, PlannedDurationMinutes);
+
+        return matchMinute > periodEndMinute ? $"{periodEndMinute}+{matchMinute - periodEndMinute}" : matchMinute.ToString();
+    }
+
+    public void NormalizeElapsedPlayingTimeToCurrentPeriodStart(DateTimeOffset nowUtc)
+    {
+        if (!ActualStartUtc.HasValue || PlannedPeriodCount <= 1) return;
+
+        var normalizedPeriod = Math.Clamp(CurrentPeriodNumber, 1, PlannedPeriodCount);
+        var targetElapsedSeconds = Math.Min(normalizedPeriod * PlannedPeriodDurationMinutes, PlannedDurationMinutes) * 60L;
+        var totalClockSeconds = Math.Max(0, (long)(nowUtc - ActualStartUtc.Value).TotalSeconds);
+        TotalPausedSeconds = Math.Max(0, totalClockSeconds - targetElapsedSeconds);
+    }
+    
     public int NormalizeMatchMinute(int elapsedMinute, int periodNumber = 1)
     {
         if (elapsedMinute <= 0) return 0;
-        if (PlannedPeriodCount <= 1) return Math.Min(elapsedMinute, PlannedDurationMinutes);
+        if (PlannedPeriodCount <= 1) return elapsedMinute;
 
         var periodDuration = PlannedPeriodDurationMinutes;
-        if (periodDuration <= 0) return Math.Min(elapsedMinute, PlannedDurationMinutes);
+        if (periodDuration <= 0) return elapsedMinute;
 
         var normalizedPeriod = Math.Clamp(periodNumber, 1, PlannedPeriodCount);
         var periodStartMinute = (normalizedPeriod - 1) * periodDuration;
-        var periodEndMinute = Math.Min(periodStartMinute + periodDuration, PlannedDurationMinutes);
 
-        return Math.Clamp(elapsedMinute, periodStartMinute, periodEndMinute);
+        return Math.Max(elapsedMinute, periodStartMinute);
     }
 
     public void Validate()

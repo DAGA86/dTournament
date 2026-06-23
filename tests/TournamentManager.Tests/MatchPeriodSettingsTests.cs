@@ -27,18 +27,38 @@ public sealed class MatchPeriodSettingsTests
     }
 
     [Fact]
-    public void Match_NormalizeMatchMinute_Clamps_One_Period_To_Total_Duration()
+    public void Match_NormalizeMatchMinute_Allows_One_Period_Overtime()
     {
         var match = new Match { PlannedDurationMinutes = 30, PlannedPeriodCount = 1 };
-        Assert.Equal(30, match.NormalizeMatchMinute(32));
+        Assert.Equal(32, match.NormalizeMatchMinute(32));
     }
 
     [Fact]
-    public void Match_NormalizeMatchMinute_Clamps_Two_Period_Match_To_Selected_Period_End()
+    public void Match_NormalizeMatchMinute_Allows_Overtime_In_Selected_Period()
     {
         var match = new Match { PlannedDurationMinutes = 30, PlannedPeriodCount = 2 };
-        Assert.Equal(15, match.NormalizeMatchMinute(16, periodNumber: 1));
-        Assert.Equal(30, match.NormalizeMatchMinute(32, periodNumber: 2));
+        Assert.Equal(16, match.NormalizeMatchMinute(16, periodNumber: 1));
+        Assert.Equal(32, match.NormalizeMatchMinute(32, periodNumber: 2));
+    }
+
+    [Fact]
+    public void Match_FormatMatchMinute_Uses_Added_Time_Only_After_Current_Period_End()
+    {
+        var match = new Match { PlannedDurationMinutes = 30, PlannedPeriodCount = 2 };
+
+        Assert.Equal("15+1", match.FormatMatchMinute(16, periodNumber: 1));
+        Assert.Equal("16", match.FormatMatchMinute(16, periodNumber: 2));
+    }
+
+    [Fact]
+    public void Match_NormalizeElapsedPlayingTimeToCurrentPeriodStart_Starts_Next_Period_At_Planned_Minute()
+    {
+        var start = DateTimeOffset.UtcNow;
+        var match = new Match { ActualStartUtc = start, PlannedDurationMinutes = 30, PlannedPeriodCount = 2, CurrentPeriodNumber = 1 };
+
+        match.NormalizeElapsedPlayingTimeToCurrentPeriodStart(start.AddMinutes(16).AddSeconds(20));
+
+        Assert.Equal(TimeSpan.FromMinutes(15), match.GetElapsedPlayingTime(start.AddMinutes(16).AddSeconds(20)));
     }
 
     [Fact]
@@ -56,6 +76,6 @@ public sealed class MatchPeriodSettingsTests
         var start = DateTimeOffset.UtcNow.AddMinutes(-16);
         var match = new Match { ActualStartUtc = start, PlannedDurationMinutes = 30, PlannedPeriodCount = 2, CurrentPeriodNumber = 1 };
 
-        Assert.Equal(15, match.GetCurrentMatchMinute(start.AddMinutes(16)));
+        Assert.Equal(16, match.GetCurrentMatchMinute(start.AddMinutes(16)));
     }
 }

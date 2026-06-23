@@ -24,6 +24,7 @@ public sealed class MatchManagementService(IMatchRepository matchRepository, IPl
             match.PausedAtUtc = null;
             if (match.PlannedPeriodCount > 1 && match.CurrentPeriodNumber < match.PlannedPeriodCount)
             {
+                match.NormalizeElapsedPlayingTimeToCurrentPeriodStart(now);
                 match.CurrentPeriodNumber++;
             }
         }
@@ -69,7 +70,9 @@ public sealed class MatchManagementService(IMatchRepository matchRepository, IPl
         if (!player.IsActive) throw new InvalidOperationException("Inactive players cannot be selected for new match events.");
         if (!isOwnGoal && player.TeamId != teamId) throw new InvalidOperationException("A player cannot score for a team they do not belong to.");
         if (isOwnGoal && player.TeamId == teamId) throw new InvalidOperationException("Own goal player must belong to the opposing team.");
-        var goal = new GoalEvent { MatchId = matchId, TeamId = teamId, PlayerId = playerId, MatchMinute = match.GetCurrentMatchMinute(DateTimeOffset.UtcNow), IsOwnGoal = isOwnGoal, RecordedByUserId = userId };
+        var now = DateTimeOffset.UtcNow;
+        var currentPeriodNumber = match.GetCurrentPeriodNumber(now);
+        var goal = new GoalEvent { MatchId = matchId, TeamId = teamId, PlayerId = playerId, MatchMinute = match.GetCurrentMatchMinute(now, currentPeriodNumber), MatchPeriodNumber = currentPeriodNumber, IsOwnGoal = isOwnGoal, RecordedByUserId = userId };
         goal.Validate();
         await matchRepository.AddGoalAsync(goal, cancellationToken);
         match.GoalEvents.Add(goal);
@@ -122,7 +125,7 @@ public sealed class MatchManagementService(IMatchRepository matchRepository, IPl
     private static MatchControlDto ToControlDto(Match match)
     {
         RecalculateScore(match);
-        var goals = match.GoalEvents.OrderBy(x => x.MatchMinute).ThenBy(x => x.RecordedAtUtc).Select(x => new GoalEventDto(x.Id, x.MatchId, x.Team?.Name ?? string.Empty, x.Player?.DisplayName ?? string.Empty, x.MatchMinute, x.IsOwnGoal, x.IsActive, x.RecordedAtUtc)).ToList();
+        var goals = match.GoalEvents.OrderBy(x => x.MatchMinute).ThenBy(x => x.RecordedAtUtc).Select(x => new GoalEventDto(x.Id, x.MatchId, x.Team?.Name ?? string.Empty, x.Player?.DisplayName ?? string.Empty, x.MatchMinute, x.MatchPeriodNumber, match.FormatMatchMinute(x.MatchMinute, x.MatchPeriodNumber), x.IsOwnGoal, x.IsActive, x.RecordedAtUtc)).ToList();
         var homePlayers = match.HomeTeam?.Players.Where(x => x.IsActive).OrderBy(x => x.ShirtNumber).ThenBy(x => x.DisplayName).Select(x => new PlayerSelectionDto(x.Id, x.TeamId, x.DisplayName, x.ShirtNumber)).ToList() ?? new List<PlayerSelectionDto>();
         var awayPlayers = match.AwayTeam?.Players.Where(x => x.IsActive).OrderBy(x => x.ShirtNumber).ThenBy(x => x.DisplayName).Select(x => new PlayerSelectionDto(x.Id, x.TeamId, x.DisplayName, x.ShirtNumber)).ToList() ?? new List<PlayerSelectionDto>();
         return new MatchControlDto(match.Id, match.HomeTeamId, match.AwayTeamId, match.HomeTeam?.Name ?? string.Empty, match.AwayTeam?.Name ?? string.Empty, match.HomeScore ?? 0, match.AwayScore ?? 0, match.Status, match.ActualStartUtc, match.ActualEndUtc, (long)match.GetElapsedPlayingTime(DateTimeOffset.UtcNow).TotalSeconds, match.GetCurrentPeriodNumber(DateTimeOffset.UtcNow), match.PlannedDurationMinutes, match.PlannedPeriodCount, match.PlannedPeriodDurationMinutes, goals, homePlayers, awayPlayers);

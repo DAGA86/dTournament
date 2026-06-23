@@ -11,6 +11,7 @@ public sealed class GoalEvent : BaseEntity
     public Guid PlayerId { get; set; }
     public Player? Player { get; set; }
     public int MatchMinute { get; set; }
+    public int MatchPeriodNumber { get; set; } = 1;
     public DateTimeOffset RecordedAtUtc { get; set; } = DateTimeOffset.UtcNow;
     public bool IsOwnGoal { get; set; }
     public string RecordedByUserId { get; set; } = string.Empty;
@@ -20,6 +21,7 @@ public sealed class GoalEvent : BaseEntity
     public void Validate()
     {
         if (MatchMinute < 0) throw new InvalidOperationException("Match minute cannot be negative.");
+        if (MatchPeriodNumber <= 0) throw new InvalidOperationException("Match period number must be positive.");
         if (TeamId == Guid.Empty) throw new InvalidOperationException("Goal team is required.");
         if (PlayerId == Guid.Empty) throw new InvalidOperationException("Goal player is required.");
         if (string.IsNullOrWhiteSpace(RecordedByUserId)) throw new InvalidOperationException("Recorded by user is required.");
