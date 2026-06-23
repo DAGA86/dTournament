@@ -12,6 +12,10 @@ public static class DependencyInjection
     {
         services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
         services.AddScoped<ITournamentRepository, TournamentRepository>();
+        services.AddScoped<IAgeGroupRepository, AgeGroupRepository>();
+        services.AddScoped<ITeamRepository, TeamRepository>();
+        services.AddScoped<IPlayerRepository, PlayerRepository>();
+        services.AddScoped<IVenueRepository, VenueRepository>();
         return services;
     }
 }

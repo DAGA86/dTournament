@@ -4,7 +4,7 @@ Aplicação web para gestão mobile-first de torneios de futebol de formação.
 
 ## Estado atual
 
-O repositório estava vazio, contendo apenas `.gitkeep`. A Fase 1 cria a estrutura base da solução, autenticação com ASP.NET Core Identity, entidades iniciais de torneios e escalões, EF Core Code First, primeira migration manual, CRUD inicial de torneios, localização base para `pt-PT`, Bootstrap 5 e testes unitários iniciais.
+O repositório estava vazio, contendo apenas `.gitkeep`. A Fase 1 criou a estrutura base da solução, autenticação com ASP.NET Core Identity, entidades iniciais de torneios e escalões, EF Core Code First, primeira migration manual, CRUD inicial de torneios, localização base para `pt-PT`, Bootstrap 5 e testes unitários iniciais. A Fase 2 acrescenta equipas, jogadores, campos, validações de idade/números, repositórios, serviços, controllers e views mobile-first para estes dados.
 
 ## Plano por fases
 
@@ -78,4 +78,4 @@ dotnet test TournamentManager.sln
 
 - A CLI `.NET` não está disponível neste contentor, por isso build, restore, migrations geradas automaticamente e testes não puderam ser executados localmente.
 - A migration inicial foi criada manualmente e deve ser validada num ambiente com SDK .NET 8.
-- As fases 2-7 ainda não estão implementadas.
+- As fases 3-7 ainda não estão implementadas.

@@ -1,8 +1,11 @@
 @model IReadOnlyList<TournamentDto>
-@{ ViewData["Title"] = "Torneios"; }
+@{
+    ViewData["Title"] = "Torneios";
+}
 <div class="d-flex justify-content-between align-items-center gap-2 mb-3"><h1 class="h3 mb-0">Torneios</h1><a class="btn btn-primary" asp-action="Create">Criar</a></div>
 <div class="row g-3">
-@foreach (var tournament in Model) {
-    <div class="col-12 col-md-6"><div class="card shadow-sm"><div class="card-body"><h2 class="h5">@tournament.Name</h2><p class="mb-1 text-muted">@tournament.Location</p><p class="mb-2">@tournament.StartsOn.ToString("dd/MM/yyyy") - @tournament.EndsOn.ToString("dd/MM/yyyy")</p><a class="btn btn-outline-primary w-100" asp-action="Details" asp-route-id="@tournament.Id">Abrir</a></div></div></div>
-}
+    @foreach (var tournament in Model)
+    {
+        <div class="col-12 col-md-6"><div class="card shadow-sm"><div class="card-body"><h2 class="h5">@tournament.Name</h2><p class="mb-1 text-muted">@tournament.Location</p><p class="mb-2">@tournament.StartsOn.ToString("dd/MM/yyyy") - @tournament.EndsOn.ToString("dd/MM/yyyy")</p><a class="btn btn-outline-primary w-100" asp-action="Details" asp-route-id="@tournament.Id">Abrir</a></div></div></div>
+    }
 </div>

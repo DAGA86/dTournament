@@ -218,6 +218,156 @@ namespace TournamentManager.Infrastructure.Migrations
                     b.ToTable("AgeGroups", (string)null);
                 });
 
+            modelBuilder.Entity("TournamentManager.Domain.Entities.Group", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("AgeGroupId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<int>("DisplayOrder")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(80)
+                        .HasColumnType("nvarchar(80)");
+
+                    b.Property<DateTimeOffset?>("UpdatedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AgeGroupId", "Name")
+                        .IsUnique();
+
+                    b.ToTable("Groups", (string)null);
+                });
+
+            modelBuilder.Entity("TournamentManager.Domain.Entities.Player", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("AgeOverrideApproved")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("AgeOverrideApprovedByUserId")
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("AgeOverrideReason")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<DateOnly>("BirthDate")
+                        .HasColumnType("date");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("DisplayName")
+                        .IsRequired()
+                        .HasMaxLength(80)
+                        .HasColumnType("nvarchar(80)");
+
+                    b.Property<string>("FullName")
+                        .IsRequired()
+                        .HasMaxLength(180)
+                        .HasColumnType("nvarchar(180)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<int?>("ShirtNumber")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("TeamId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset?>("UpdatedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DisplayName");
+
+                    b.HasIndex("TeamId", "ShirtNumber")
+                        .IsUnique()
+                        .HasFilter("[ShirtNumber] IS NOT NULL");
+
+                    b.ToTable("Players", (string)null);
+                });
+
+            modelBuilder.Entity("TournamentManager.Domain.Entities.Team", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("AgeGroupId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Club")
+                        .IsRequired()
+                        .HasMaxLength(160)
+                        .HasColumnType("nvarchar(160)");
+
+                    b.Property<string>("Contact")
+                        .HasMaxLength(160)
+                        .HasColumnType("nvarchar(160)");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid?>("GroupId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("LogoPath")
+                        .HasMaxLength(512)
+                        .HasColumnType("nvarchar(512)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(160)
+                        .HasColumnType("nvarchar(160)");
+
+                    b.Property<string>("PrimaryColor")
+                        .HasMaxLength(16)
+                        .HasColumnType("nvarchar(16)");
+
+                    b.Property<string>("ResponsiblePerson")
+                        .IsRequired()
+                        .HasMaxLength(160)
+                        .HasColumnType("nvarchar(160)");
+
+                    b.Property<string>("ShortName")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
+
+                    b.Property<DateTimeOffset?>("UpdatedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GroupId");
+
+                    b.HasIndex("AgeGroupId", "Name")
+                        .IsUnique();
+
+                    b.ToTable("Teams", (string)null);
+                });
+
             modelBuilder.Entity("TournamentManager.Domain.Entities.Tournament", b =>
                 {
                     b.Property<Guid>("Id")
@@ -266,6 +416,38 @@ namespace TournamentManager.Infrastructure.Migrations
                     b.HasIndex("Name");
 
                     b.ToTable("Tournaments", (string)null);
+                });
+
+            modelBuilder.Entity("TournamentManager.Domain.Entities.Venue", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("nvarchar(120)");
+
+                    b.Property<DateTimeOffset?>("UpdatedAtUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
+
+                    b.ToTable("Venues", (string)null);
                 });
 
             modelBuilder.Entity("TournamentManager.Infrastructure.Identity.ApplicationUser", b =>
@@ -397,6 +579,63 @@ namespace TournamentManager.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("Tournament");
+                });
+
+            modelBuilder.Entity("TournamentManager.Domain.Entities.Group", b =>
+                {
+                    b.HasOne("TournamentManager.Domain.Entities.AgeGroup", "AgeGroup")
+                        .WithMany("Groups")
+                        .HasForeignKey("AgeGroupId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("AgeGroup");
+                });
+
+            modelBuilder.Entity("TournamentManager.Domain.Entities.Player", b =>
+                {
+                    b.HasOne("TournamentManager.Domain.Entities.Team", "Team")
+                        .WithMany("Players")
+                        .HasForeignKey("TeamId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Team");
+                });
+
+            modelBuilder.Entity("TournamentManager.Domain.Entities.Team", b =>
+                {
+                    b.HasOne("TournamentManager.Domain.Entities.AgeGroup", "AgeGroup")
+                        .WithMany("Teams")
+                        .HasForeignKey("AgeGroupId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("TournamentManager.Domain.Entities.Group", "Group")
+                        .WithMany("Teams")
+                        .HasForeignKey("GroupId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("AgeGroup");
+
+                    b.Navigation("Group");
+                });
+
+            modelBuilder.Entity("TournamentManager.Domain.Entities.AgeGroup", b =>
+                {
+                    b.Navigation("Groups");
+
+                    b.Navigation("Teams");
+                });
+
+            modelBuilder.Entity("TournamentManager.Domain.Entities.Group", b =>
+                {
+                    b.Navigation("Teams");
+                });
+
+            modelBuilder.Entity("TournamentManager.Domain.Entities.Team", b =>
+                {
+                    b.Navigation("Players");
                 });
 
             modelBuilder.Entity("TournamentManager.Domain.Entities.Tournament", b =>

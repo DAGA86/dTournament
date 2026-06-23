@@ -1,3 +1,11 @@
-body { background: #f7f8fb; }
-.btn-lg, .btn { min-height: 44px; }
-.card { border-radius: 1rem; }
+body {
+    background: #f7f8fb;
+}
+
+.btn-lg, .btn {
+    min-height: 44px;
+}
+
+.card {
+    border-radius: 1rem;
+}

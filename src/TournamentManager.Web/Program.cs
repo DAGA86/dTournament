@@ -14,6 +14,10 @@ builder.Services.AddControllersWithViews(options => options.Filters.Add(new Micr
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddScoped<TournamentService>();
 builder.Services.AddScoped<AgeGroupValidationService>();
+builder.Services.AddScoped<AgeGroupService>();
+builder.Services.AddScoped<TeamService>();
+builder.Services.AddScoped<PlayerService>();
+builder.Services.AddScoped<VenueService>();
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 {
     options.Password.RequiredLength = 12;

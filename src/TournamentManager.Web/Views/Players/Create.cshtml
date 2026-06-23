@@ -1,0 +1,6 @@
+﻿@model PlayerCreateViewModel
+@{
+    ViewData["Title"] = "Criar jogador";
+}
+<h1 class="h3">Criar jogador</h1>
+<form asp-action="Create" method="post" class="vstack gap-3"><div asp-validation-summary="ModelOnly" class="text-danger"></div><input asp-for="TeamId" type="hidden" /><div><label asp-for="FullName" class="form-label">Nome completo</label><input asp-for="FullName" class="form-control" /></div><div><label asp-for="DisplayName" class="form-label">Nome a apresentar</label><input asp-for="DisplayName" class="form-control" /></div><div><label asp-for="BirthDate" class="form-label">Data de nascimento</label><input asp-for="BirthDate" type="date" class="form-control" /></div><div><label asp-for="ShirtNumber" class="form-label">Número da camisola</label><input asp-for="ShirtNumber" class="form-control" /></div><div class="form-check"><input asp-for="AgeOverrideApproved" class="form-check-input" /><label asp-for="AgeOverrideApproved" class="form-check-label">Autorizar exceção de idade</label></div><div><label asp-for="AgeOverrideReason" class="form-label">Motivo da exceção</label><textarea asp-for="AgeOverrideReason" class="form-control"></textarea></div><button class="btn btn-primary btn-lg">Guardar</button></form>

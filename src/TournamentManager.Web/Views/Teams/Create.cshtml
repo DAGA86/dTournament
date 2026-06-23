@@ -1,0 +1,6 @@
+﻿@model TeamCreateViewModel
+@{
+    ViewData["Title"] = "Criar equipa";
+}
+<h1 class="h3">Criar equipa</h1>
+<form asp-action="Create" method="post" class="vstack gap-3"><div asp-validation-summary="ModelOnly" class="text-danger"></div><input asp-for="AgeGroupId" type="hidden" /><div><label asp-for="Name" class="form-label">Nome</label><input asp-for="Name" class="form-control" /></div><div><label asp-for="ShortName" class="form-label">Nome curto</label><input asp-for="ShortName" class="form-control" /></div><div><label asp-for="Club" class="form-label">Clube</label><input asp-for="Club" class="form-control" /></div><div><label asp-for="ResponsiblePerson" class="form-label">Responsável</label><input asp-for="ResponsiblePerson" class="form-control" /></div><div><label asp-for="Contact" class="form-label">Contacto</label><input asp-for="Contact" class="form-control" /></div><div><label asp-for="PrimaryColor" class="form-label">Cor principal</label><input asp-for="PrimaryColor" class="form-control" placeholder="#0055ff" /></div><button class="btn btn-primary btn-lg">Guardar</button></form>

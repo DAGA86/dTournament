@@ -1,0 +1,6 @@
+﻿@model AgeGroupCreateViewModel
+@{
+    ViewData["Title"] = "Criar escalão";
+}
+<h1 class="h3">Criar escalão</h1>
+<form asp-action="Create" method="post" class="vstack gap-3"><div asp-validation-summary="ModelOnly" class="text-danger"></div><input asp-for="TournamentId" type="hidden" /><div><label asp-for="Name" class="form-label">Nome</label><input asp-for="Name" class="form-control" /></div><div class="row g-2"><div class="col-6"><label asp-for="BirthYearFrom" class="form-label">Ano inicial</label><input asp-for="BirthYearFrom" class="form-control" /></div><div class="col-6"><label asp-for="BirthYearTo" class="form-label">Ano final</label><input asp-for="BirthYearTo" class="form-control" /></div></div><div><label asp-for="MatchDurationMinutes" class="form-label">Duração do jogo</label><input asp-for="MatchDurationMinutes" class="form-control" /></div><div><label asp-for="CompetitionFormat" class="form-label">Formato</label><select asp-for="CompetitionFormat" asp-items="Html.GetEnumSelectList<CompetitionFormat>()" class="form-select"></select></div><button class="btn btn-primary btn-lg">Guardar</button></form>

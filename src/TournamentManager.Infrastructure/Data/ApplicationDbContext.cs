@@ -9,6 +9,10 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
 {
     public DbSet<Tournament> Tournaments => Set<Tournament>();
     public DbSet<AgeGroup> AgeGroups => Set<AgeGroup>();
+    public DbSet<Group> Groups => Set<Group>();
+    public DbSet<Team> Teams => Set<Team>();
+    public DbSet<Player> Players => Set<Player>();
+    public DbSet<Venue> Venues => Set<Venue>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

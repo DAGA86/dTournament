@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using TournamentManager.Domain.Enums;
 
 namespace TournamentManager.Domain.Entities;
@@ -18,6 +19,8 @@ public sealed class AgeGroup : BaseEntity
     public int RoundRobinLegs { get; set; } = 1;
     public int? FixedMatchesPerTeam { get; set; }
     public int AdvancingTeamsPerGroup { get; set; } = 2;
+    public ICollection<Group> Groups { get; set; } = new List<Group>();
+    public ICollection<Team> Teams { get; set; } = new List<Team>();
     public string TieBreakerOrder { get; set; } = string.Join(',', TieBreaker.Points, TieBreaker.HeadToHead, TieBreaker.GoalDifference, TieBreaker.GoalsFor, TieBreaker.GoalsAgainst, TieBreaker.ManualDecision);
 
     public void Validate()

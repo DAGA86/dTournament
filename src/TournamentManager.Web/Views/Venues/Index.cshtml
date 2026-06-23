@@ -1,0 +1,11 @@
+﻿@model IReadOnlyList<VenueDto>
+@{
+    ViewData["Title"] = "Campos";
+}
+<div class="d-flex justify-content-between align-items-center gap-2 mb-3"><h1 class="h3 mb-0">Campos</h1><a class="btn btn-primary" asp-action="Create">Criar</a></div>
+<div class="row g-3">
+    @foreach (var venue in Model)
+    {
+        <div class="col-12 col-md-6"><div class="card shadow-sm"><div class="card-body"><div class="d-flex justify-content-between"><h2 class="h5">@venue.Name</h2><span class="badge @(venue.IsActive ? "bg-success" : "bg-secondary")">@(venue.IsActive ? "Ativo" : "Inativo")</span></div><p class="text-muted">@venue.Description</p><form asp-action="SetActive" method="post"><input type="hidden" name="id" value="@venue.Id" /><input type="hidden" name="isActive" value="@(!venue.IsActive)" /><button class="btn btn-outline-secondary w-100">@(venue.IsActive ? "Desativar" : "Ativar")</button></form></div></div></div>
+    }
+</div>
