@@ -47,7 +47,7 @@ dotnet user-secrets set "InitialAdmin:Email" "admin@example.com" --project src/T
 dotnet user-secrets set "InitialAdmin:Password" "<strong unique password>" --project src/TournamentManager.Web
 ```
 
-O utilizador inicial é criado no arranque se ainda não existir. As funções `Administrator`, `Operator` e `Viewer` também são criadas.
+O utilizador inicial é criado no arranque se ainda não existir. As funções `Administrator`, `Operator` e `Viewer` também são criadas. O registo público está desativado; novos utilizadores devem ser criados/atribuídos a perfis por um administrador ou por seed/configuração controlada.
 
 ## Migrations
 

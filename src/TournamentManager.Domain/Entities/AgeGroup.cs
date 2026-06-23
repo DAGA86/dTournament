@@ -1,4 +1,3 @@
-using System.Text.RegularExpressions;
 using TournamentManager.Domain.Enums;
 
 namespace TournamentManager.Domain.Entities;
@@ -12,6 +11,8 @@ public sealed class AgeGroup : BaseEntity
     public int? BirthYearFrom { get; set; }
     public int? BirthYearTo { get; set; }
     public int MatchDurationMinutes { get; set; } = 20;
+    public int NumberOfPeriods { get; set; } = 1;
+    public int HalfTimeBreakMinutes { get; set; }
     public int PointsPerWin { get; set; } = 3;
     public int PointsPerDraw { get; set; } = 1;
     public int PointsPerLoss { get; set; }
@@ -28,6 +29,8 @@ public sealed class AgeGroup : BaseEntity
     public void Validate()
     {
         if (MatchDurationMinutes <= 0) throw new InvalidOperationException("Match duration must be greater than zero.");
+        if (NumberOfPeriods < 1) throw new InvalidOperationException("Number of periods must be greater than zero.");
+        if (HalfTimeBreakMinutes < 0) throw new InvalidOperationException("Half-time break cannot be negative.");
         if (BirthYearFrom.HasValue && BirthYearTo.HasValue && BirthYearFrom > BirthYearTo) throw new InvalidOperationException("The first birth year cannot be greater than the last birth year.");
         if (RoundRobinLegs is < 1 or > 2) throw new InvalidOperationException("Round robin legs must be one or two.");
     }

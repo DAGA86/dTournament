@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TournamentManager.Infrastructure.Data;
 
@@ -11,9 +12,11 @@ using TournamentManager.Infrastructure.Data;
 namespace TournamentManager.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260623130640_AddMatchPeriodSettings")]
+    partial class AddMatchPeriodSettings
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -463,9 +466,6 @@ namespace TournamentManager.Infrastructure.Migrations
                         .HasMaxLength(2000)
                         .HasColumnType("nvarchar(2000)");
 
-                    b.Property<DateTimeOffset?>("PausedAtUtc")
-                        .HasColumnType("datetimeoffset");
-
                     b.Property<int>("Phase")
                         .HasColumnType("int");
 
@@ -489,9 +489,6 @@ namespace TournamentManager.Infrastructure.Migrations
 
                     b.Property<int>("Status")
                         .HasColumnType("int");
-
-                    b.Property<long>("TotalPausedSeconds")
-                        .HasColumnType("bigint");
 
                     b.Property<Guid>("TournamentId")
                         .HasColumnType("uniqueidentifier");

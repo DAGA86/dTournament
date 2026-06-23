@@ -9,7 +9,11 @@ namespace TournamentManager.Web.Controllers;
 [Authorize(Policy = "AuthenticatedViewer")]
 public sealed class PlayersController(PlayerService playerService) : Controller
 {
-    public async Task<IActionResult> Index(Guid teamId, CancellationToken cancellationToken) => View(await playerService.ListByTeamAsync(teamId, cancellationToken));
+    public async Task<IActionResult> Index(Guid teamId, CancellationToken cancellationToken)
+    {
+        ViewBag.TeamId = teamId;
+        return View(await playerService.ListByTeamAsync(teamId, cancellationToken));
+    }
 
     [Authorize(Policy = "AdministratorOnly")]
     public IActionResult Create(Guid teamId) => View(new PlayerCreateViewModel { TeamId = teamId });

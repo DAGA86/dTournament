@@ -1,6 +1,6 @@
 ﻿@model IReadOnlyList<PlayerDto>
 @{
-    ViewData["Title"] = "Jogadores"; var teamId = Model.FirstOrDefault()?.TeamId ?? Guid.Empty;
+    ViewData["Title"] = "Jogadores"; var teamId = (Guid)ViewBag.TeamId;
 }
 <div class="d-flex justify-content-between align-items-center gap-2 mb-3"><h1 class="h3 mb-0">Jogadores</h1><a class="btn btn-primary" asp-action="Create" asp-route-teamId="@teamId">Criar</a></div>
 <div class="list-group shadow-sm">

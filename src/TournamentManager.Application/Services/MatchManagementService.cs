@@ -1,5 +1,4 @@
-﻿using System.Text.RegularExpressions;
-using TournamentManager.Application.Abstractions;
+﻿using TournamentManager.Application.Abstractions;
 using TournamentManager.Application.DTOs;
 using TournamentManager.Domain.Entities;
 using TournamentManager.Domain.Enums;
@@ -18,8 +17,14 @@ public sealed class MatchManagementService(IMatchRepository matchRepository, IPl
     {
         var match = await GetMatchAsync(matchId, cancellationToken);
         if (match.Status is not (MatchStatus.Scheduled or MatchStatus.Ready or MatchStatus.Paused)) throw new InvalidOperationException("Only scheduled, ready or paused matches can be started.");
+        var now = DateTimeOffset.UtcNow;
+        if (match.Status == MatchStatus.Paused && match.PausedAtUtc.HasValue)
+        {
+            match.TotalPausedSeconds += Math.Max(0, (long)(now - match.PausedAtUtc.Value).TotalSeconds);
+            match.PausedAtUtc = null;
+        }
         match.Status = MatchStatus.InProgress;
-        match.ActualStartUtc ??= DateTimeOffset.UtcNow;
+        match.ActualStartUtc ??= now;
         match.UpdatedAtUtc = DateTimeOffset.UtcNow;
         await matchRepository.SaveChangesAsync(cancellationToken);
     }
@@ -29,6 +34,7 @@ public sealed class MatchManagementService(IMatchRepository matchRepository, IPl
         var match = await GetMatchAsync(matchId, cancellationToken);
         if (match.Status != MatchStatus.InProgress) throw new InvalidOperationException("Only in-progress matches can be paused.");
         match.Status = MatchStatus.Paused;
+        match.PausedAtUtc = DateTimeOffset.UtcNow;
         match.UpdatedAtUtc = DateTimeOffset.UtcNow;
         await matchRepository.SaveChangesAsync(cancellationToken);
     }
@@ -37,6 +43,12 @@ public sealed class MatchManagementService(IMatchRepository matchRepository, IPl
     {
         var match = await GetMatchAsync(matchId, cancellationToken);
         if (match.Status is not (MatchStatus.InProgress or MatchStatus.Paused)) throw new InvalidOperationException("Only started matches can be finished.");
+        if (match.Status == MatchStatus.Paused && match.PausedAtUtc.HasValue)
+        {
+            var now = DateTimeOffset.UtcNow;
+            match.TotalPausedSeconds += Math.Max(0, (long)(now - match.PausedAtUtc.Value).TotalSeconds);
+            match.PausedAtUtc = null;
+        }
         RecalculateScore(match);
         match.Status = MatchStatus.Finished;
         match.ActualEndUtc = DateTimeOffset.UtcNow;
@@ -44,7 +56,7 @@ public sealed class MatchManagementService(IMatchRepository matchRepository, IPl
         await matchRepository.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task RegisterGoalAsync(Guid matchId, Guid teamId, Guid playerId, int matchMinute, bool isOwnGoal, string userId, CancellationToken cancellationToken = default)
+    public async Task RegisterGoalAsync(Guid matchId, Guid teamId, Guid playerId, bool isOwnGoal, string userId, CancellationToken cancellationToken = default)
     {
         var match = await GetMatchAsync(matchId, cancellationToken);
         if (match.Status != MatchStatus.InProgress) throw new InvalidOperationException("Goals can only be registered while the match is in progress.");
@@ -53,7 +65,7 @@ public sealed class MatchManagementService(IMatchRepository matchRepository, IPl
         if (!player.IsActive) throw new InvalidOperationException("Inactive players cannot be selected for new match events.");
         if (!isOwnGoal && player.TeamId != teamId) throw new InvalidOperationException("A player cannot score for a team they do not belong to.");
         if (isOwnGoal && player.TeamId == teamId) throw new InvalidOperationException("Own goal player must belong to the opposing team.");
-        var goal = new GoalEvent { MatchId = matchId, TeamId = teamId, PlayerId = playerId, MatchMinute = matchMinute, IsOwnGoal = isOwnGoal, RecordedByUserId = userId };
+        var goal = new GoalEvent { MatchId = matchId, TeamId = teamId, PlayerId = playerId, MatchMinute = match.GetCurrentMatchMinute(DateTimeOffset.UtcNow), IsOwnGoal = isOwnGoal, RecordedByUserId = userId };
         goal.Validate();
         await matchRepository.AddGoalAsync(goal, cancellationToken);
         match.GoalEvents.Add(goal);
@@ -93,9 +105,9 @@ public sealed class MatchManagementService(IMatchRepository matchRepository, IPl
         await matchRepository.SaveChangesAsync(cancellationToken);
     }
 
-    private async Task<Domain.Entities.Match> GetMatchAsync(Guid matchId, CancellationToken cancellationToken) => await matchRepository.GetForManagementAsync(matchId, cancellationToken) ?? throw new InvalidOperationException("Match was not found.");
+    private async Task<Match> GetMatchAsync(Guid matchId, CancellationToken cancellationToken) => await matchRepository.GetForManagementAsync(matchId, cancellationToken) ?? throw new InvalidOperationException("Match was not found.");
 
-    private static void RecalculateScore(Domain.Entities.Match match)
+    private static void RecalculateScore(Match match)
     {
         var homeGoals = match.GoalEvents.Count(x => x.IsActive && x.TeamId == match.HomeTeamId);
         var awayGoals = match.GoalEvents.Count(x => x.IsActive && x.TeamId == match.AwayTeamId);
@@ -103,10 +115,12 @@ public sealed class MatchManagementService(IMatchRepository matchRepository, IPl
         match.AwayScore = awayGoals;
     }
 
-    private static MatchControlDto ToControlDto(Domain.Entities.Match match)
+    private static MatchControlDto ToControlDto(Match match)
     {
         RecalculateScore(match);
         var goals = match.GoalEvents.OrderBy(x => x.MatchMinute).ThenBy(x => x.RecordedAtUtc).Select(x => new GoalEventDto(x.Id, x.MatchId, x.Team?.Name ?? string.Empty, x.Player?.DisplayName ?? string.Empty, x.MatchMinute, x.IsOwnGoal, x.IsActive, x.RecordedAtUtc)).ToList();
-        return new MatchControlDto(match.Id, match.HomeTeam?.Name ?? string.Empty, match.AwayTeam?.Name ?? string.Empty, match.HomeScore ?? 0, match.AwayScore ?? 0, match.Status, match.ActualStartUtc, match.ActualEndUtc, goals);
+        var homePlayers = match.HomeTeam?.Players.Where(x => x.IsActive).OrderBy(x => x.ShirtNumber).ThenBy(x => x.DisplayName).Select(x => new PlayerSelectionDto(x.Id, x.TeamId, x.DisplayName, x.ShirtNumber)).ToList() ?? new List<PlayerSelectionDto>();
+        var awayPlayers = match.AwayTeam?.Players.Where(x => x.IsActive).OrderBy(x => x.ShirtNumber).ThenBy(x => x.DisplayName).Select(x => new PlayerSelectionDto(x.Id, x.TeamId, x.DisplayName, x.ShirtNumber)).ToList() ?? new List<PlayerSelectionDto>();
+        return new MatchControlDto(match.Id, match.HomeTeamId, match.AwayTeamId, match.HomeTeam?.Name ?? string.Empty, match.AwayTeam?.Name ?? string.Empty, match.HomeScore ?? 0, match.AwayScore ?? 0, match.Status, match.ActualStartUtc, match.ActualEndUtc, (long)match.GetElapsedPlayingTime(DateTimeOffset.UtcNow).TotalSeconds, goals, homePlayers, awayPlayers);
     }
 }

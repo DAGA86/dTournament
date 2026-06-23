@@ -1,6 +1,6 @@
 ﻿@model IReadOnlyList<TeamDto>
 @{
-    ViewData["Title"] = "Equipas"; var ageGroupId = Model.FirstOrDefault()?.AgeGroupId ?? Guid.Empty;
+    ViewData["Title"] = "Equipas"; var ageGroupId = (Guid)ViewBag.AgeGroupId;
 }
 <div class="d-flex justify-content-between align-items-center gap-2 mb-3"><h1 class="h3 mb-0">Equipas</h1><a class="btn btn-primary" asp-action="Create" asp-route-ageGroupId="@ageGroupId">Criar</a></div>
 <div class="row g-3">

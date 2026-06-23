@@ -1,11 +1,11 @@
 ﻿@model IReadOnlyList<AgeGroupDto>
 @{
-    ViewData["Title"] = "Escalões"; var tournamentId = Model.FirstOrDefault()?.TournamentId ?? Guid.Empty;
+    ViewData["Title"] = "Escalões"; var tournamentId = (Guid)ViewBag.TournamentId;
 }
 <div class="d-flex justify-content-between align-items-center gap-2 mb-3"><h1 class="h3 mb-0">Escalões</h1><a class="btn btn-primary" asp-action="Create" asp-route-tournamentId="@tournamentId">Criar</a></div>
 <div class="row g-3">
     @foreach (var ageGroup in Model)
     {
-        <div class="col-12 col-md-6"><div class="card shadow-sm"><div class="card-body"><h2 class="h5">@ageGroup.Name</h2><p class="text-muted">@ageGroup.CompetitionFormat · @ageGroup.MatchDurationMinutes min</p><a class="btn btn-outline-primary w-100" asp-controller="Teams" asp-action="Index" asp-route-ageGroupId="@ageGroup.Id">Equipas</a></div></div></div>
+        <div class="col-12 col-md-6"><div class="card shadow-sm"><div class="card-body"><h2 class="h5">@ageGroup.Name</h2><p class="text-muted">@ageGroup.CompetitionFormat · @ageGroup.MatchDurationMinutes min</p><div class="d-grid gap-2"><a class="btn btn-outline-primary" asp-controller="Teams" asp-action="Index" asp-route-ageGroupId="@ageGroup.Id">Equipas</a><a class="btn btn-outline-secondary" asp-controller="Schedules" asp-action="Index" asp-route-ageGroupId="@ageGroup.Id">Calendário</a><a class="btn btn-outline-success" asp-controller="Standings" asp-action="Index" asp-route-ageGroupId="@ageGroup.Id">Classificação</a><a class="btn btn-outline-info" asp-controller="Statistics" asp-action="Players" asp-route-ageGroupId="@ageGroup.Id">Estatísticas</a><a class="btn btn-outline-dark" asp-controller="Knockout" asp-action="Index" asp-route-ageGroupId="@ageGroup.Id">Fase final</a></div></div></div></div>
     }
 </div>

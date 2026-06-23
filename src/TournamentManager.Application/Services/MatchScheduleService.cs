@@ -1,5 +1,4 @@
-﻿using System.Text.RegularExpressions;
-using TournamentManager.Application.Abstractions;
+﻿using TournamentManager.Application.Abstractions;
 using TournamentManager.Application.DTOs;
 using TournamentManager.Domain.Entities;
 using TournamentManager.Domain.Enums;
@@ -34,7 +33,7 @@ public sealed class MatchScheduleService(IAgeGroupRepository ageGroupRepository,
         var generated = await PreviewAsync(ageGroupId, cancellationToken);
         var matches = generated.Select((x, index) =>
         {
-            var match = new Domain.Entities.Match
+            var match = new Match
             {
                 TournamentId = ageGroup.TournamentId,
                 AgeGroupId = ageGroup.Id,
@@ -44,7 +43,9 @@ public sealed class MatchScheduleService(IAgeGroupRepository ageGroupRepository,
                 AwayTeamId = x.AwayTeamId,
                 ScheduledStartUtc = firstKickoffUtc.AddMinutes(index * minutesBetweenMatches),
                 VenueId = venueId,
-                PlannedDurationMinutes = ageGroup.MatchDurationMinutes
+                PlannedDurationMinutes = ageGroup.MatchDurationMinutes,
+                PlannedPeriodCount = ageGroup.NumberOfPeriods,
+                HalfTimeBreakMinutes = ageGroup.HalfTimeBreakMinutes
             };
             match.Validate();
             return match;
@@ -52,4 +53,29 @@ public sealed class MatchScheduleService(IAgeGroupRepository ageGroupRepository,
         await matchRepository.AddRangeAsync(matches, cancellationToken);
         await matchRepository.SaveChangesAsync(cancellationToken);
     }
+
+    public async Task<Guid> CreateManualAsync(Guid ageGroupId, Guid homeTeamId, Guid awayTeamId, int roundNumber, DateTimeOffset? scheduledStartUtc, Guid? venueId, CancellationToken cancellationToken = default)
+    {
+        var ageGroup = await ageGroupRepository.GetAsync(ageGroupId, cancellationToken) ?? throw new InvalidOperationException("Age group was not found.");
+        if (homeTeamId == awayTeamId) throw new InvalidOperationException("A team cannot play against itself.");
+        var match = new Match
+        {
+            TournamentId = ageGroup.TournamentId,
+            AgeGroupId = ageGroup.Id,
+            Phase = ageGroup.CompetitionFormat == CompetitionFormat.GroupStageAndFinals ? CompetitionPhase.GroupStage : CompetitionPhase.League,
+            RoundNumber = roundNumber,
+            HomeTeamId = homeTeamId,
+            AwayTeamId = awayTeamId,
+            ScheduledStartUtc = scheduledStartUtc,
+            VenueId = venueId,
+            PlannedDurationMinutes = ageGroup.MatchDurationMinutes,
+            PlannedPeriodCount = ageGroup.NumberOfPeriods,
+            HalfTimeBreakMinutes = ageGroup.HalfTimeBreakMinutes
+        };
+        match.Validate();
+        await matchRepository.AddAsync(match, cancellationToken);
+        await matchRepository.SaveChangesAsync(cancellationToken);
+        return match.Id;
+    }
+
 }

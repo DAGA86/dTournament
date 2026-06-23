@@ -10,5 +10,7 @@ public sealed class AgeGroupCreateViewModel
     public int? BirthYearFrom { get; set; }
     public int? BirthYearTo { get; set; }
     [Range(1, 180)] public int MatchDurationMinutes { get; set; } = 20;
+    [Range(1, 2)] public int NumberOfPeriods { get; set; } = 1;
+    [Range(0, 60)] public int HalfTimeBreakMinutes { get; set; }
     public CompetitionFormat CompetitionFormat { get; set; }
 }

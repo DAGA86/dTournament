@@ -2,13 +2,26 @@
 @{
     ViewData["Title"] = "Gestão do jogo";
 }
-<div class="card shadow-sm mb-3"><div class="card-body text-center"><h1 class="h4">@Model.HomeTeamName vs @Model.AwayTeamName</h1><div class="display-4 fw-bold">@Model.HomeScore - @Model.AwayScore</div><span class="badge bg-primary">@Model.Status</span></div></div>
+<div class="card shadow-sm mb-3"><div class="card-body text-center"><h1 class="h4">@Model.HomeTeamName vs @Model.AwayTeamName</h1><div class="display-4 fw-bold">@Model.HomeScore - @Model.AwayScore</div><div class="display-6" id="match-clock" data-seconds="@Model.CurrentElapsedSeconds" data-running="@(Model.Status == TournamentManager.Domain.Enums.MatchStatus.InProgress ? "true" : "false")">00:00</div><span class="badge bg-primary">@Model.Status</span></div></div>
 <div class="row g-2 mb-3">
     <div class="col-6"><form asp-action="Start" method="post"><input type="hidden" name="id" value="@Model.Id" /><button class="btn btn-success btn-lg w-100">Iniciar/Retomar</button></form></div>
     <div class="col-6"><form asp-action="Pause" method="post"><input type="hidden" name="id" value="@Model.Id" /><button class="btn btn-warning btn-lg w-100">Pausar</button></form></div>
     <div class="col-12"><form asp-action="Finish" method="post" onsubmit="return confirm('Tem a certeza que pretende terminar o jogo?');"><input type="hidden" name="id" value="@Model.Id" /><button class="btn btn-danger btn-lg w-100">Terminar jogo</button></form></div>
 </div>
-<div class="card shadow-sm mb-3"><div class="card-body"><h2 class="h5">Registar golo</h2><form asp-action="RegisterGoal" method="post" class="vstack gap-2"><input type="hidden" name="MatchId" value="@Model.Id" /><input name="TeamId" class="form-control" placeholder="Id da equipa" /><input name="PlayerId" class="form-control" placeholder="Id do jogador" /><input name="MatchMinute" class="form-control" type="number" min="0" placeholder="Minuto" /><div class="form-check"><input name="IsOwnGoal" value="true" type="checkbox" class="form-check-input" /><label class="form-check-label">Autogolo</label></div><button class="btn btn-primary btn-lg">Registar</button></form></div></div>
+<div class="card shadow-sm mb-3"><div class="card-body"><h2 class="h5">Registar golo</h2><form asp-action="RegisterGoal" method="post" class="vstack gap-2"><input type="hidden" name="MatchId" value="@Model.Id" /><select name="TeamId" class="form-select"><option value="@Model.HomeTeamId">@Model.HomeTeamName</option><option value="@Model.AwayTeamId">@Model.AwayTeamName</option></select><select name="PlayerId" class="form-select"><optgroup label="@Model.HomeTeamName">@foreach (var player in Model.HomePlayers) {
+    <option value="@player.Id">@(player.ShirtNumber.HasValue ? $"#{player.ShirtNumber} " : string.Empty)@player.DisplayName</option>
+}
+</optgroup><optgroup label="@Model.AwayTeamName">@foreach (var player in Model.AwayPlayers) {
+<option value="@player.Id">@(player.ShirtNumber.HasValue ? $"#{player.ShirtNumber} " : string.Empty)@player.DisplayName</option>
+}
+</optgroup></select><div class="form-text">O minuto do golo é calculado automaticamente a partir do tempo atual de jogo.</div><div class="form-check"><input name="IsOwnGoal" value="true" type="checkbox" class="form-check-input" /><label class="form-check-label">Autogolo</label></div><button class="btn btn-primary btn-lg">Registar</button></form></div></div>
+<div class="card shadow-sm mb-3"><div class="card-body"><h2 class="h5">Melhor em campo</h2><div class="row g-2"><div class="col-12 col-md-6"><form asp-action="SelectPlayerOfTheMatch" method="post" class="vstack gap-2"><input type="hidden" name="MatchId" value="@Model.Id" /><input type="hidden" name="TeamId" value="@Model.HomeTeamId" /><label class="form-label">@Model.HomeTeamName</label><select name="PlayerId" class="form-select">@foreach (var player in Model.HomePlayers) {
+    <option value="@player.Id">@player.DisplayName</option>
+}
+</select><button class="btn btn-outline-primary">Guardar</button></form></div><div class="col-12 col-md-6"><form asp-action="SelectPlayerOfTheMatch" method="post" class="vstack gap-2"><input type="hidden" name="MatchId" value="@Model.Id" /><input type="hidden" name="TeamId" value="@Model.AwayTeamId" /><label class="form-label">@Model.AwayTeamName</label><select name="PlayerId" class="form-select">@foreach (var player in Model.AwayPlayers) {
+<option value="@player.Id">@player.DisplayName</option>
+}
+</select><button class="btn btn-outline-primary">Guardar</button></form></div></div></div></div>
 <div class="card shadow-sm">
     <div class="card-body">
         <h2 class="h5">Eventos</h2><div class="list-group">
@@ -24,5 +37,5 @@
 </div>
 @section Scripts {
     <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
-    <script>const connection = new signalR.HubConnectionBuilder().withUrl('/hubs/tournament-updates').build();connection.on('MatchChanged', () => window.location.reload());connection.start().then(() => connection.invoke('JoinMatchGroup', '@Model.Id'));</script>
+    <script>const clock=document.getElementById('match-clock');let seconds=parseInt(clock.dataset.seconds||'0',10);const render=()=>{const m=Math.floor(seconds/60).toString().padStart(2,'0');const s=(seconds%60).toString().padStart(2,'0');clock.textContent=`${m}:${s}`};render();if(clock.dataset.running==='true'){setInterval(()=>{seconds++;render();},1000)}const connection = new signalR.HubConnectionBuilder().withUrl('/hubs/tournament-updates').build();connection.on('MatchChanged', () => window.location.reload());connection.start().then(() => connection.invoke('JoinMatchGroup', '@Model.Id'));</script>
 }

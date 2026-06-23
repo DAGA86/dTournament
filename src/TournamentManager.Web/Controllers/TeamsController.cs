@@ -8,7 +8,11 @@ namespace TournamentManager.Web.Controllers;
 [Authorize(Policy = "AuthenticatedViewer")]
 public sealed class TeamsController(TeamService teamService) : Controller
 {
-    public async Task<IActionResult> Index(Guid ageGroupId, CancellationToken cancellationToken) => View(await teamService.ListByAgeGroupAsync(ageGroupId, cancellationToken));
+    public async Task<IActionResult> Index(Guid ageGroupId, CancellationToken cancellationToken)
+    {
+        ViewBag.AgeGroupId = ageGroupId;
+        return View(await teamService.ListByAgeGroupAsync(ageGroupId, cancellationToken));
+    }
 
     [Authorize(Policy = "AdministratorOnly")]
     public IActionResult Create(Guid ageGroupId) => View(new TeamCreateViewModel { AgeGroupId = ageGroupId });

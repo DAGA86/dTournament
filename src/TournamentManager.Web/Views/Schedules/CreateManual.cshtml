@@ -1,0 +1,25 @@
+﻿@model ManualMatchCreateViewModel
+@{
+    ViewData["Title"] = "Criar jogo manual";
+    var teams = (IReadOnlyList<TeamDto>)ViewBag.Teams;
+    var venues = (IReadOnlyList<VenueDto>)ViewBag.Venues;
+}
+<h1 class="h3">Criar jogo manual</h1>
+<form asp-action="CreateManual" method="post" class="vstack gap-3">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div><input asp-for="AgeGroupId" type="hidden" />
+    <div><label asp-for="HomeTeamId" class="form-label">Equipa da casa</label><select asp-for="HomeTeamId" class="form-select"><option value="">Selecionar</option>@foreach (var team in teams) {
+        <option value="@team.Id">@team.Name</option>
+    }
+</select></div>
+<div><label asp-for="AwayTeamId" class="form-label">Equipa visitante</label><select asp-for="AwayTeamId" class="form-select"><option value="">Selecionar</option>@foreach (var team in teams) {
+    <option value="@team.Id">@team.Name</option>
+}
+</select></div>
+<div><label asp-for="RoundNumber" class="form-label">Jornada/ronda</label><input asp-for="RoundNumber" class="form-control" /></div>
+<div><label asp-for="ScheduledStartUtc" class="form-label">Data/hora prevista</label><input asp-for="ScheduledStartUtc" class="form-control" /></div>
+<div><label asp-for="VenueId" class="form-label">Campo</label><select asp-for="VenueId" class="form-select"><option value="">Sem campo</option>@foreach (var venue in venues) {
+    <option value="@venue.Id">@venue.Name</option>
+}
+</select></div>
+<button class="btn btn-primary btn-lg">Guardar</button>
+</form>

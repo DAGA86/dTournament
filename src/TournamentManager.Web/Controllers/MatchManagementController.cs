@@ -45,8 +45,8 @@ public sealed class MatchManagementController(MatchManagementService matchManage
     {
         if (!ModelState.IsValid) return RedirectToAction(nameof(Control), new { id = model.MatchId });
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? throw new InvalidOperationException("Authenticated user id was not found.");
-        await matchManagementService.RegisterGoalAsync(model.MatchId, model.TeamId, model.PlayerId, model.MatchMinute, model.IsOwnGoal, userId, cancellationToken);
-        await auditService.RecordAsync(userId, "RegisterGoal", "Match", model.MatchId.ToString(), null, $"Goal:{model.TeamId}:{model.PlayerId}:{model.MatchMinute}", null, cancellationToken);
+        await matchManagementService.RegisterGoalAsync(model.MatchId, model.TeamId, model.PlayerId, model.IsOwnGoal, userId, cancellationToken);
+        await auditService.RecordAsync(userId, "RegisterGoal", "Match", model.MatchId.ToString(), null, $"Goal:{model.TeamId}:{model.PlayerId}", null, cancellationToken);
         await NotifyMatchChangedAsync(model.MatchId, "goalRegistered", cancellationToken);
         return RedirectToAction(nameof(Control), new { id = model.MatchId });
     }
