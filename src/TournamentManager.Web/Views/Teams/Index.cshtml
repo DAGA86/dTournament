@@ -1,0 +1,8 @@
+@model IReadOnlyList<TeamDto>
+@{ ViewData["Title"] = "Equipas"; var ageGroupId = Model.FirstOrDefault()?.AgeGroupId ?? Guid.Empty; }
+<div class="d-flex justify-content-between align-items-center gap-2 mb-3"><h1 class="h3 mb-0">Equipas</h1><a class="btn btn-primary" asp-action="Create" asp-route-ageGroupId="@ageGroupId">Criar</a></div>
+<div class="row g-3">
+@foreach (var team in Model) {
+    <div class="col-12 col-md-6"><div class="card shadow-sm"><div class="card-body"><div class="d-flex justify-content-between"><h2 class="h5">@team.Name</h2><span class="badge @(team.IsActive ? "bg-success" : "bg-secondary")">@(team.IsActive ? "Ativa" : "Inativa")</span></div><p class="mb-1 text-muted">@team.Club · @team.ShortName</p><p class="mb-2">Responsável: @team.ResponsiblePerson</p><a class="btn btn-outline-primary w-100 mb-2" asp-controller="Players" asp-action="Index" asp-route-teamId="@team.Id">Jogadores (@team.PlayerCount)</a><form asp-action="SetActive" method="post"><input type="hidden" name="id" value="@team.Id" /><input type="hidden" name="ageGroupId" value="@team.AgeGroupId" /><input type="hidden" name="isActive" value="@(!team.IsActive)" /><button class="btn btn-outline-secondary w-100">@(team.IsActive ? "Desativar" : "Ativar")</button></form></div></div></div>
+}
+</div>

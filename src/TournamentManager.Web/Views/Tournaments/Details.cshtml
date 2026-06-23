@@ -1,0 +1,3 @@
+@model TournamentDto
+@{ ViewData["Title"] = Model.Name; }
+<div class="card shadow-sm"><div class="card-body"><h1 class="h3">@Model.Name</h1><p class="text-muted">@Model.Location</p><p>@Model.StartsOn.ToString("dd/MM/yyyy") - @Model.EndsOn.ToString("dd/MM/yyyy")</p><span class="badge bg-secondary">@Model.Status</span><hr /><p>Escalões configurados: @Model.AgeGroupCount</p><a class="btn btn-primary w-100" asp-controller="AgeGroups" asp-action="Index" asp-route-tournamentId="@Model.Id">Gerir escalões</a></div></div>
