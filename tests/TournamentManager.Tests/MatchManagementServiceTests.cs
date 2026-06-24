@@ -123,6 +123,7 @@ public sealed class MatchManagementServiceTests
         public Task<Player?> GetAsync(Guid id, CancellationToken cancellationToken = default) => Task.FromResult(players.FirstOrDefault(x => x.Id == id));
         public Task<bool> ShirtNumberExistsAsync(Guid teamId, int shirtNumber, Guid? excludingPlayerId = null, CancellationToken cancellationToken = default) => Task.FromResult(false);
         public Task AddAsync(Player player, CancellationToken cancellationToken = default) => Task.CompletedTask;
+        public Task ReplaceForTeamAsync(Guid teamId, IReadOnlyList<Player> players, CancellationToken cancellationToken = default) => Task.CompletedTask;
         public Task SaveChangesAsync(CancellationToken cancellationToken = default) => Task.CompletedTask;
     }
 }

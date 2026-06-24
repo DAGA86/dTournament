@@ -12,6 +12,7 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
     public DbSet<Group> Groups => Set<Group>();
     public DbSet<Team> Teams => Set<Team>();
     public DbSet<Player> Players => Set<Player>();
+    public DbSet<TeamStaffMember> TeamStaffMembers => Set<TeamStaffMember>();
     public DbSet<Venue> Venues => Set<Venue>();
     public DbSet<Match> Matches => Set<Match>();
     public DbSet<GoalEvent> GoalEvents => Set<GoalEvent>();

@@ -20,6 +20,7 @@ builder.Services.AddScoped<AgeGroupValidationService>();
 builder.Services.AddScoped<AgeGroupService>();
 builder.Services.AddScoped<TeamService>();
 builder.Services.AddScoped<PlayerService>();
+builder.Services.AddScoped<TeamRosterSubmissionService>();
 builder.Services.AddScoped<VenueService>();
 builder.Services.AddScoped<ScheduleGenerationService>();
 builder.Services.AddScoped<MatchScheduleService>();

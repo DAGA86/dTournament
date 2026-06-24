@@ -15,6 +15,7 @@ public static class DependencyInjection
         services.AddScoped<IAgeGroupRepository, AgeGroupRepository>();
         services.AddScoped<ITeamRepository, TeamRepository>();
         services.AddScoped<IPlayerRepository, PlayerRepository>();
+        services.AddScoped<ITeamStaffMemberRepository, TeamStaffMemberRepository>();
         services.AddScoped<IVenueRepository, VenueRepository>();
         services.AddScoped<IMatchRepository, MatchRepository>();
         services.AddScoped<IAuditLogRepository, AuditLogRepository>();

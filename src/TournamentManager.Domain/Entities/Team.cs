@@ -18,6 +18,7 @@ public sealed class Team : BaseEntity
     public string? Contact { get; set; }
     public bool IsActive { get; set; } = true;
     public ICollection<Player> Players { get; set; } = new List<Player>();
+    public ICollection<TeamStaffMember> StaffMembers { get; set; } = new List<TeamStaffMember>();
 
     public void Validate()
     {

@@ -10,5 +10,11 @@ public sealed class PlayerRepository(ApplicationDbContext dbContext) : IPlayerRe
     public Task<Player?> GetAsync(Guid id, CancellationToken cancellationToken = default) => dbContext.Players.Include(x => x.Team).FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
     public Task<bool> ShirtNumberExistsAsync(Guid teamId, int shirtNumber, Guid? excludingPlayerId = null, CancellationToken cancellationToken = default) => dbContext.Players.AnyAsync(x => x.TeamId == teamId && x.ShirtNumber == shirtNumber && (!excludingPlayerId.HasValue || x.Id != excludingPlayerId.Value), cancellationToken);
     public async Task AddAsync(Player player, CancellationToken cancellationToken = default) => await dbContext.Players.AddAsync(player, cancellationToken);
+    public async Task ReplaceForTeamAsync(Guid teamId, IReadOnlyList<Player> players, CancellationToken cancellationToken = default)
+    {
+        var existing = await dbContext.Players.Where(x => x.TeamId == teamId).ToListAsync(cancellationToken);
+        dbContext.Players.RemoveRange(existing);
+        await dbContext.Players.AddRangeAsync(players, cancellationToken);
+    }
     public Task SaveChangesAsync(CancellationToken cancellationToken = default) => dbContext.SaveChangesAsync(cancellationToken);
 }

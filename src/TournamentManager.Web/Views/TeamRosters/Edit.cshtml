@@ -1,0 +1,62 @@
+﻿@model TournamentManager.Web.ViewModels.TeamRosters.TeamRosterSubmissionViewModel
+@{
+    ViewData["Title"] = "Submissão de plantel";
+}
+
+<div class="mb-4">
+    <h1 class="h3 mb-1">Submissão de plantel</h1>
+    <p class="text-muted mb-0">@Model.TeamName · @Model.AgeGroupName</p>
+</div>
+
+@if (TempData["RosterSubmitted"] is string message)
+{
+    <div class="alert alert-success">@message</div>
+}
+
+<form method="post" class="card shadow-sm">
+    <div class="card-body">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <input type="hidden" asp-for="TeamId" />
+        <input type="hidden" asp-for="TeamName" />
+        <input type="hidden" asp-for="AgeGroupName" />
+        <input type="hidden" asp-for="BirthYearFrom" />
+        <input type="hidden" asp-for="BirthYearTo" />
+
+        <h2 class="h5">Jogadores</h2>
+        <p class="text-muted small">Introduza até 14 jogadores. Linhas sem nome serão ignoradas. @(Model.BirthYearFrom.HasValue || Model.BirthYearTo.HasValue ? $"Anos permitidos para o escalão: {Model.BirthYearFrom?.ToString() ?? "sem mínimo"} a {Model.BirthYearTo?.ToString() ?? "sem máximo"}." : string.Empty)</p>
+        <div class="table-responsive mb-4">
+            <table class="table align-middle">
+                <thead><tr><th>Nome</th><th style="width: 9rem;">Número</th><th style="width: 12rem;">Data de nascimento</th></tr></thead>
+                <tbody>
+                    @for (var i = 0; i < Model.Players.Count; i++)
+                    {
+                        <tr>
+                            <td><input asp-for="Players[i].FullName" class="form-control" /><span asp-validation-for="Players[i].FullName" class="text-danger small"></span></td>
+                            <td><input asp-for="Players[i].ShirtNumber" class="form-control" /><span asp-validation-for="Players[i].ShirtNumber" class="text-danger small"></span></td>
+                            <td><input asp-for="Players[i].BirthDate" class="form-control" type="date" /><span asp-validation-for="Players[i].BirthDate" class="text-danger small"></span></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <h2 class="h5">Staff</h2>
+        <p class="text-muted small">Introduza até 3 elementos de staff.</p>
+        <div class="table-responsive mb-4">
+            <table class="table align-middle">
+                <thead><tr><th>Nome</th><th>Função</th></tr></thead>
+                <tbody>
+                    @for (var i = 0; i < Model.StaffMembers.Count; i++)
+                    {
+                        <tr>
+                            <td><input asp-for="StaffMembers[i].FullName" class="form-control" /><span asp-validation-for="StaffMembers[i].FullName" class="text-danger small"></span></td>
+                            <td><input asp-for="StaffMembers[i].Role" class="form-control" /><span asp-validation-for="StaffMembers[i].Role" class="text-danger small"></span></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Submeter plantel</button>
+    </div>
+</form>
