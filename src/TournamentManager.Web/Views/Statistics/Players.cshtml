@@ -3,9 +3,54 @@
     ViewData["Title"] = "Estatísticas de jogadores";
 }
 <h1 class="h3 mb-3">Jogadores</h1>
-<div class="list-group shadow-sm">
-    @foreach (var player in Model)
-    {
-        <div class="list-group-item d-flex justify-content-between align-items-center"><div><strong>@player.PlayerName</strong><div class="text-muted small">@player.TeamName</div></div><div class="text-end"><div>@player.Goals golos</div><small>@player.PlayerOfTheMatchVotes votos</small></div></div>
-    }
+<div class="table-responsive shadow-sm">
+    <table class="table table-striped table-hover align-middle" data-sortable-table>
+        <thead>
+            <tr>
+                <th><button type="button" class="btn btn-link p-0 text-decoration-none" data-sort="text">Nome do jogador</button></th>
+                <th><button type="button" class="btn btn-link p-0 text-decoration-none" data-sort="text">Equipa</button></th>
+                <th><button type="button" class="btn btn-link p-0 text-decoration-none" data-sort="number">Número</button></th>
+                <th><button type="button" class="btn btn-link p-0 text-decoration-none" data-sort="number">Total de golos</button></th>
+                <th><button type="button" class="btn btn-link p-0 text-decoration-none" data-sort="number">Votos melhor em campo</button></th>
+                <th><button type="button" class="btn btn-link p-0 text-decoration-none" data-sort="number">Votos melhor guarda-redes</button></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var player in Model)
+            {
+                <tr>
+                    <td>@player.PlayerName</td>
+                    <td>@player.TeamName</td>
+                    <td data-value="@(player.ShirtNumber ?? int.MaxValue)">@(player.ShirtNumber?.ToString() ?? "-")</td>
+                    <td>@player.Goals</td>
+                    <td>@player.PlayerOfTheMatchVotes</td>
+                    <td>@player.GoalkeeperOfTheMatchVotes</td>
+                </tr>
+            }
+        </tbody>
+    </table>
 </div>
+@section Scripts {
+    <script>
+        document.querySelectorAll('[data-sortable-table]').forEach(table => {
+            table.querySelectorAll('th button').forEach((button, columnIndex) => {
+                button.addEventListener('click', () => {
+                    const direction = button.dataset.direction === 'asc' ? 'desc' : 'asc';
+                    table.querySelectorAll('th button').forEach(x => delete x.dataset.direction);
+                    button.dataset.direction = direction;
+                    const rows = Array.from(table.tBodies[0].rows);
+                    const isNumber = button.dataset.sort === 'number';
+                    rows.sort((a, b) => {
+                        const aCell = a.cells[columnIndex];
+                        const bCell = b.cells[columnIndex];
+                        const aValue = aCell.dataset.value ?? aCell.textContent.trim();
+                        const bValue = bCell.dataset.value ?? bCell.textContent.trim();
+                        const result = isNumber ? Number(aValue) - Number(bValue) : aValue.localeCompare(bValue, 'pt', { sensitivity: 'base' });
+                        return direction === 'asc' ? result : -result;
+                    });
+                    rows.forEach(row => table.tBodies[0].appendChild(row));
+                });
+            });
+        });
+    </script>
+}

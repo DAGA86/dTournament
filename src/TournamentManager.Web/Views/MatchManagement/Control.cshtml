@@ -95,6 +95,28 @@
                     <button class="btn btn-outline-primary">Guardar</button>
                 </form>
             </div>
+            <hr />
+            <h3 class="h6">Melhor guarda-redes do jogo</h3>
+            <form asp-action="SelectGoalkeeperOfTheMatch" method="post" class="vstack gap-2">
+                <input type="hidden" name="MatchId" value="@Model.Id" />
+                <input type="hidden" name="TeamId" value="@Model.HomeTeamId" />
+                <select name="PlayerId" class="form-select">
+                    <optgroup label="@Model.HomeTeamName">
+                        @foreach (var player in Model.HomePlayers)
+                        {
+                            <option value="@player.Id" selected="@(Model.GoalkeeperOfTheMatchPlayerId == player.Id)">@player.DisplayName</option>
+                        }
+                    </optgroup>
+                    <optgroup label="@Model.AwayTeamName">
+                        @foreach (var player in Model.AwayPlayers)
+                        {
+                            <option value="@player.Id" selected="@(Model.GoalkeeperOfTheMatchPlayerId == player.Id)">@player.DisplayName</option>
+                        }
+                    </optgroup>
+                </select>
+                <div class="form-text">Voto do observador do jogo, pertencente à organização.</div>
+                <button class="btn btn-outline-primary">Guardar melhor guarda-redes</button>
+            </form>
         </div>
     </div>
 </div>

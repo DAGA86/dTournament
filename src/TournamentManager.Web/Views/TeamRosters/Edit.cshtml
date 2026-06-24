@@ -48,7 +48,14 @@
                     {
                         <tr>
                             <td><input asp-for="StaffMembers[i].FullName" class="form-control" /><span asp-validation-for="StaffMembers[i].FullName" class="text-danger small"></span></td>
-                            <td><input asp-for="StaffMembers[i].Role" class="form-control" /><span asp-validation-for="StaffMembers[i].Role" class="text-danger small"></span></td>
+                            <td>
+                                <select asp-for="StaffMembers[i].Role" class="form-control">
+                                    <option value="">Selecionar</option>
+                                    <option value="Treinador">Treinador</option>
+                                    <option value="Outro">Outro</option>
+                                </select>
+                                <span asp-validation-for="StaffMembers[i].Role" class="text-danger small"></span>
+                            </td>
                         </tr>
                     }
                 </tbody>

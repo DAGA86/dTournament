@@ -57,6 +57,15 @@ public sealed class MatchScheduleService(IAgeGroupRepository ageGroupRepository,
     public async Task<Guid> CreateManualAsync(Guid ageGroupId, Guid homeTeamId, Guid awayTeamId, int roundNumber, DateTimeOffset? scheduledStartUtc, Guid? venueId, CancellationToken cancellationToken = default)
     {
         var ageGroup = await ageGroupRepository.GetAsync(ageGroupId, cancellationToken) ?? throw new InvalidOperationException("Age group was not found.");
+        if (scheduledStartUtc.HasValue)
+        {
+            var scheduledDate = DateOnly.FromDateTime(scheduledStartUtc.Value.DateTime);
+            if (ageGroup.Tournament is null) throw new InvalidOperationException("Tournament was not found.");
+            if (scheduledDate < ageGroup.Tournament.StartsOn || scheduledDate > ageGroup.Tournament.EndsOn)
+            {
+                throw new InvalidOperationException($"The scheduled date must be between {ageGroup.Tournament.StartsOn:yyyy-MM-dd} and {ageGroup.Tournament.EndsOn:yyyy-MM-dd}.");
+            }
+        }
         if (homeTeamId == awayTeamId) throw new InvalidOperationException("A team cannot play against itself.");
         var match = new Match
         {

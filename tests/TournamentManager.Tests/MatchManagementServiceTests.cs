@@ -116,6 +116,7 @@ public sealed class MatchManagementServiceTests
         public Task<PlayerOfTheMatchVote?> GetVoteAsync(Guid matchId, Guid teamId, CancellationToken cancellationToken = default) => Task.FromResult<PlayerOfTheMatchVote?>(null);
         public Task AddVoteAsync(PlayerOfTheMatchVote vote, CancellationToken cancellationToken = default) => Task.CompletedTask;
         public Task SaveChangesAsync(CancellationToken cancellationToken = default) => Task.CompletedTask;
+        public Task<PlayerOfTheMatchVote?> GetGoalkeeperVoteAsync(Guid matchId, CancellationToken cancellationToken = default) => Task.FromResult<PlayerOfTheMatchVote?>(null);
     }
 
     private sealed class FakePlayerRepository(params Player[] players) : IPlayerRepository

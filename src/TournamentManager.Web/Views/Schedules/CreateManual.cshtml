@@ -16,7 +16,7 @@
 }
 </select></div>
 <div><label asp-for="RoundNumber" class="form-label">Jornada/ronda</label><input asp-for="RoundNumber" class="form-control" /></div>
-<div><label asp-for="ScheduledStartUtc" class="form-label">Data/hora prevista</label><input asp-for="ScheduledStartUtc" class="form-control" /></div>
+<div><label asp-for="ScheduledStartUtc" class="form-label">Data/hora prevista</label><input asp-for="ScheduledStartUtc" type="datetime-local" class="form-control" /><span asp-validation-for="ScheduledStartUtc" class="text-danger"></span></div>
 <div><label asp-for="VenueId" class="form-label">Campo</label><select asp-for="VenueId" class="form-select"><option value="">Sem campo</option>@foreach (var venue in venues) {
     <option value="@venue.Id">@venue.Name</option>
 }

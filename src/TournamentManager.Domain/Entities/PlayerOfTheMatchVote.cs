@@ -9,6 +9,7 @@ public sealed class PlayerOfTheMatchVote : BaseEntity
     public Guid PlayerId { get; set; }
     public Player? Player { get; set; }
     public string SelectedByUserId { get; set; } = string.Empty;
+    public bool IsGoalkeeperVote { get; set; }
     public byte[] RowVersion { get; set; } = Array.Empty<byte>();
 
     public void Validate()

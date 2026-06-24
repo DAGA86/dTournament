@@ -9,13 +9,15 @@ public sealed class PlayerStatisticsService(IMatchRepository matchRepository, IT
     {
         var matches = await matchRepository.ListFinishedByAgeGroupAsync(ageGroupId, cancellationToken);
         var goals = matches.SelectMany(x => x.GoalEvents).Where(x => x.IsActive && !x.IsOwnGoal).GroupBy(x => x.PlayerId).ToDictionary(x => x.Key, x => x.Count());
-        var votes = matches.SelectMany(x => x.PlayerOfTheMatchVotes).GroupBy(x => x.PlayerId).ToDictionary(x => x.Key, x => x.Count());
+        var votes = matches.SelectMany(x => x.PlayerOfTheMatchVotes).Where(x => !x.IsGoalkeeperVote).GroupBy(x => x.PlayerId).ToDictionary(x => x.Key, x => x.Count());
+        var goalkeeperVotes = matches.SelectMany(x => x.PlayerOfTheMatchVotes).Where(x => x.IsGoalkeeperVote).GroupBy(x => x.PlayerId).ToDictionary(x => x.Key, x => x.Count());
         return matches.SelectMany(x => x.GoalEvents.Select(g => g.Player).Concat(x.PlayerOfTheMatchVotes.Select(v => v.Player)))
             .Where(x => x is not null)
             .DistinctBy(x => x!.Id)
-            .Select(x => new PlayerStatisticDto(x!.Id, x.DisplayName, x.Team?.Name ?? string.Empty, goals.GetValueOrDefault(x.Id), votes.GetValueOrDefault(x.Id)))
+            .Select(x => new PlayerStatisticDto(x!.Id, x.DisplayName, x.Team?.Name ?? string.Empty, x.ShirtNumber, goals.GetValueOrDefault(x.Id), votes.GetValueOrDefault(x.Id), goalkeeperVotes.GetValueOrDefault(x.Id)))
             .OrderByDescending(x => x.Goals)
             .ThenByDescending(x => x.PlayerOfTheMatchVotes)
+            .ThenByDescending(x => x.GoalkeeperOfTheMatchVotes)
             .ThenBy(x => x.PlayerName)
             .ToList();
     }

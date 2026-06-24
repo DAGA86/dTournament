@@ -16,6 +16,7 @@ public interface IMatchRepository
     Task AddGoalAsync(GoalEvent goalEvent, CancellationToken cancellationToken = default);
     Task<GoalEvent?> GetGoalAsync(Guid goalEventId, CancellationToken cancellationToken = default);
     Task<PlayerOfTheMatchVote?> GetVoteAsync(Guid matchId, Guid teamId, CancellationToken cancellationToken = default);
+    Task<PlayerOfTheMatchVote?> GetGoalkeeperVoteAsync(Guid matchId, CancellationToken cancellationToken = default);
     Task AddVoteAsync(PlayerOfTheMatchVote vote, CancellationToken cancellationToken = default);
     Task SaveChangesAsync(CancellationToken cancellationToken = default);
 }

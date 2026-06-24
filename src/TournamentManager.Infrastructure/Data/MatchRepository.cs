@@ -31,7 +31,8 @@ public sealed class MatchRepository(ApplicationDbContext dbContext) : IMatchRepo
     public async Task AddAsync(Match match, CancellationToken cancellationToken = default) => await dbContext.Matches.AddAsync(match, cancellationToken);
     public async Task AddGoalAsync(GoalEvent goalEvent, CancellationToken cancellationToken = default) => await dbContext.GoalEvents.AddAsync(goalEvent, cancellationToken);
     public Task<GoalEvent?> GetGoalAsync(Guid goalEventId, CancellationToken cancellationToken = default) => dbContext.GoalEvents.Include(x => x.Match).ThenInclude(x => x!.GoalEvents).FirstOrDefaultAsync(x => x.Id == goalEventId, cancellationToken);
-    public Task<PlayerOfTheMatchVote?> GetVoteAsync(Guid matchId, Guid teamId, CancellationToken cancellationToken = default) => dbContext.PlayerOfTheMatchVotes.FirstOrDefaultAsync(x => x.MatchId == matchId && x.TeamId == teamId, cancellationToken);
+    public Task<PlayerOfTheMatchVote?> GetVoteAsync(Guid matchId, Guid teamId, CancellationToken cancellationToken = default) => dbContext.PlayerOfTheMatchVotes.FirstOrDefaultAsync(x => x.MatchId == matchId && x.TeamId == teamId && !x.IsGoalkeeperVote, cancellationToken);
+    public Task<PlayerOfTheMatchVote?> GetGoalkeeperVoteAsync(Guid matchId, CancellationToken cancellationToken = default) => dbContext.PlayerOfTheMatchVotes.FirstOrDefaultAsync(x => x.MatchId == matchId && x.IsGoalkeeperVote, cancellationToken);
     public async Task AddVoteAsync(PlayerOfTheMatchVote vote, CancellationToken cancellationToken = default) => await dbContext.PlayerOfTheMatchVotes.AddAsync(vote, cancellationToken);
     public Task SaveChangesAsync(CancellationToken cancellationToken = default) => dbContext.SaveChangesAsync(cancellationToken);
 }

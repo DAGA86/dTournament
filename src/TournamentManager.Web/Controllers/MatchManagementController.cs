@@ -71,5 +71,16 @@ public sealed class MatchManagementController(MatchManagementService matchManage
         return RedirectToAction(nameof(Control), new { id = model.MatchId });
     }
 
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> SelectGoalkeeperOfTheMatch(PlayerOfTheMatchViewModel model, CancellationToken cancellationToken)
+    {
+        if (!ModelState.IsValid) return RedirectToAction(nameof(Control), new { id = model.MatchId });
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? throw new InvalidOperationException("Authenticated user id was not found.");
+        await matchManagementService.SelectGoalkeeperOfTheMatchAsync(model.MatchId, model.PlayerId, userId, cancellationToken);
+        await auditService.RecordAsync(userId, "SelectGoalkeeperOfTheMatch", "Match", model.MatchId.ToString(), null, model.PlayerId.ToString(), null, cancellationToken);
+        await NotifyMatchChangedAsync(model.MatchId, "goalkeeperOfTheMatchSelected", cancellationToken);
+        return RedirectToAction(nameof(Control), new { id = model.MatchId });
+    }
+
     private Task NotifyMatchChangedAsync(Guid matchId, string eventName, CancellationToken cancellationToken) => hubContext.Clients.Group(TournamentUpdatesHub.MatchGroup(matchId.ToString())).SendAsync("MatchChanged", new { matchId, eventName }, cancellationToken);
 }

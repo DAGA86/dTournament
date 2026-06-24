@@ -112,6 +112,28 @@ public sealed class MatchManagementService(IMatchRepository matchRepository, IPl
         await matchRepository.SaveChangesAsync(cancellationToken);
     }
 
+    public async Task SelectGoalkeeperOfTheMatchAsync(Guid matchId, Guid playerId, string userId, CancellationToken cancellationToken = default)
+    {
+        var match = await GetMatchAsync(matchId, cancellationToken);
+        var player = await playerRepository.GetAsync(playerId, cancellationToken) ?? throw new InvalidOperationException("Player was not found.");
+        if (player.TeamId != match.HomeTeamId && player.TeamId != match.AwayTeamId) throw new InvalidOperationException("Goalkeeper of the match must belong to one of the match teams.");
+        var vote = await matchRepository.GetGoalkeeperVoteAsync(matchId, cancellationToken);
+        if (vote is null)
+        {
+            vote = new PlayerOfTheMatchVote { MatchId = matchId, TeamId = player.TeamId, PlayerId = playerId, SelectedByUserId = userId, IsGoalkeeperVote = true };
+            vote.Validate();
+            await matchRepository.AddVoteAsync(vote, cancellationToken);
+        }
+        else
+        {
+            vote.TeamId = player.TeamId;
+            vote.PlayerId = playerId;
+            vote.SelectedByUserId = userId;
+            vote.UpdatedAtUtc = DateTimeOffset.UtcNow;
+        }
+        await matchRepository.SaveChangesAsync(cancellationToken);
+    }
+
     private async Task<Match> GetMatchAsync(Guid matchId, CancellationToken cancellationToken) => await matchRepository.GetForManagementAsync(matchId, cancellationToken) ?? throw new InvalidOperationException("Match was not found.");
 
     private static void RecalculateScore(Match match)
@@ -128,6 +150,6 @@ public sealed class MatchManagementService(IMatchRepository matchRepository, IPl
         var goals = match.GoalEvents.OrderBy(x => x.MatchPeriodNumber).ThenBy(x => x.MatchMinute).ThenBy(x => x.RecordedAtUtc).Select(x => new GoalEventDto(x.Id, x.MatchId, x.Team?.Name ?? string.Empty, x.Player?.DisplayName ?? string.Empty, x.MatchMinute, x.MatchPeriodNumber, match.FormatMatchMinute(x.MatchMinute, x.MatchPeriodNumber), x.IsOwnGoal, x.IsActive, x.RecordedAtUtc)).ToList();
         var homePlayers = match.HomeTeam?.Players.Where(x => x.IsActive).OrderBy(x => x.ShirtNumber).ThenBy(x => x.DisplayName).Select(x => new PlayerSelectionDto(x.Id, x.TeamId, x.DisplayName, x.ShirtNumber)).ToList() ?? new List<PlayerSelectionDto>();
         var awayPlayers = match.AwayTeam?.Players.Where(x => x.IsActive).OrderBy(x => x.ShirtNumber).ThenBy(x => x.DisplayName).Select(x => new PlayerSelectionDto(x.Id, x.TeamId, x.DisplayName, x.ShirtNumber)).ToList() ?? new List<PlayerSelectionDto>();
-        return new MatchControlDto(match.Id, match.HomeTeamId, match.AwayTeamId, match.HomeTeam?.Name ?? string.Empty, match.AwayTeam?.Name ?? string.Empty, match.HomeScore ?? 0, match.AwayScore ?? 0, match.Status, match.ActualStartUtc, match.ActualEndUtc, (long)match.GetElapsedPlayingTime(DateTimeOffset.UtcNow).TotalSeconds, match.GetCurrentPeriodNumber(DateTimeOffset.UtcNow), match.PlannedDurationMinutes, match.PlannedPeriodCount, match.PlannedPeriodDurationMinutes, goals, homePlayers, awayPlayers);
+        return new MatchControlDto(match.Id, match.HomeTeamId, match.AwayTeamId, match.HomeTeam?.Name ?? string.Empty, match.AwayTeam?.Name ?? string.Empty, match.HomeScore ?? 0, match.AwayScore ?? 0, match.Status, match.ActualStartUtc, match.ActualEndUtc, (long)match.GetElapsedPlayingTime(DateTimeOffset.UtcNow).TotalSeconds, match.GetCurrentPeriodNumber(DateTimeOffset.UtcNow), match.PlannedDurationMinutes, match.PlannedPeriodCount, match.PlannedPeriodDurationMinutes, goals, homePlayers, awayPlayers, match.PlayerOfTheMatchVotes.FirstOrDefault(x => x.IsGoalkeeperVote)?.PlayerId);
     }
 }
