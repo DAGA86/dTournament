@@ -10,6 +10,8 @@ public sealed class TeamRosterSubmissionViewModel : IValidatableObject
     public string AgeGroupName { get; set; } = string.Empty;
     public int? BirthYearFrom { get; set; }
     public int? BirthYearTo { get; set; }
+    public string? MinimumBirthDate => BirthYearFrom.HasValue ? $"{BirthYearFrom.Value:D4}-01-01" : null;
+    public string? MaximumBirthDate => BirthYearTo.HasValue ? $"{BirthYearTo.Value:D4}-12-31" : null;
     public List<TeamRosterPlayerViewModel> Players { get; set; } = [];
     public List<TeamRosterStaffMemberViewModel> StaffMembers { get; set; } = [];
 

@@ -21,6 +21,14 @@ public sealed class TeamAndPlayerValidationTests
     }
 
     [Fact]
+    public void Player_Validate_Throws_When_BirthYear_Is_Before_OpenEnded_StartYear()
+    {
+        var ageGroup = new AgeGroup { Name = "Traquinas", BirthYearFrom = 2014, BirthYearTo = null };
+        var player = new Player { FullName = "Older Player", DisplayName = "Older", BirthDate = new DateOnly(2010, 1, 1) };
+        Assert.Throws<InvalidOperationException>(() => player.Validate(ageGroup));
+    }
+
+    [Fact]
     public void Player_Validate_Allows_BirthYear_Outside_AgeGroup_With_Override()
     {
         var ageGroup = new AgeGroup { Name = "Benjamins", BirthYearFrom = 2014, BirthYearTo = 2015 };

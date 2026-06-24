@@ -18,7 +18,9 @@ public sealed class TeamRostersController(TeamRosterSubmissionService rosterServ
     public async Task<IActionResult> Edit(Guid teamId, TeamRosterSubmissionViewModel model, CancellationToken cancellationToken)
     {
         model.TeamId = teamId;
-        if (!ModelState.IsValid) { await PopulateTeamNameAsync(model, cancellationToken); return View(model); }
+        await PopulateTeamNameAsync(model, cancellationToken);
+        ModelState.ClearValidationState(string.Empty);
+        if (!TryValidateModel(model)) return View(model);
         try
         {
             await rosterService.SubmitAsync(teamId, model.Players.Select(x => (x.FullName, x.ShirtNumber, x.BirthDate)).ToList(), model.StaffMembers.Select(x => (x.FullName, x.Role)).ToList(), cancellationToken);
@@ -28,7 +30,6 @@ public sealed class TeamRostersController(TeamRosterSubmissionService rosterServ
         catch (InvalidOperationException ex)
         {
             ModelState.AddModelError(string.Empty, ex.Message);
-            await PopulateTeamNameAsync(model, cancellationToken);
             return View(model);
         }
     }

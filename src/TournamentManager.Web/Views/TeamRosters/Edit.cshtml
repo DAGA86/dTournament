@@ -19,8 +19,6 @@
         <input type="hidden" asp-for="TeamId" />
         <input type="hidden" asp-for="TeamName" />
         <input type="hidden" asp-for="AgeGroupName" />
-        <input type="hidden" asp-for="BirthYearFrom" />
-        <input type="hidden" asp-for="BirthYearTo" />
 
         <h2 class="h5">Jogadores</h2>
         <p class="text-muted small">Introduza até 14 jogadores. Linhas sem nome serão ignoradas. @(Model.BirthYearFrom.HasValue || Model.BirthYearTo.HasValue ? $"Anos permitidos para o escalão: {Model.BirthYearFrom?.ToString() ?? "sem mínimo"} a {Model.BirthYearTo?.ToString() ?? "sem máximo"}." : string.Empty)</p>
@@ -33,7 +31,7 @@
                         <tr>
                             <td><input asp-for="Players[i].FullName" class="form-control" /><span asp-validation-for="Players[i].FullName" class="text-danger small"></span></td>
                             <td><input asp-for="Players[i].ShirtNumber" class="form-control" /><span asp-validation-for="Players[i].ShirtNumber" class="text-danger small"></span></td>
-                            <td><input asp-for="Players[i].BirthDate" class="form-control" type="date" /><span asp-validation-for="Players[i].BirthDate" class="text-danger small"></span></td>
+                            <td><input asp-for="Players[i].BirthDate" class="form-control" type="date" min="@Model.MinimumBirthDate" max="@Model.MaximumBirthDate" /><span asp-validation-for="Players[i].BirthDate" class="text-danger small"></span></td>
                         </tr>
                     }
                 </tbody>
