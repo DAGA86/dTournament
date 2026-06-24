@@ -12,6 +12,12 @@ public sealed class TeamService(ITeamRepository teamRepository, IAgeGroupReposit
         return teams.Select(t => new TeamDto(t.Id, t.AgeGroupId, t.AgeGroup?.Name ?? string.Empty, t.Name, t.ShortName, t.Club, t.ResponsiblePerson, t.Contact, t.IsActive, t.Players.Count)).ToList();
     }
 
+    public async Task<TeamDto?> GetAsync(Guid teamId, CancellationToken cancellationToken = default)
+    {
+        var team = await teamRepository.GetAsync(teamId, cancellationToken);
+        return team is null ? null : new TeamDto(team.Id, team.AgeGroupId, team.AgeGroup?.Name ?? string.Empty, team.Name, team.ShortName, team.Club, team.ResponsiblePerson, team.Contact, team.IsActive, team.Players.Count);
+    }
+    
     public async Task<Guid> CreateAsync(Guid ageGroupId, string name, string shortName, string club, string responsiblePerson, string? contact, string? primaryColor, CancellationToken cancellationToken = default)
     {
         var ageGroup = await ageGroupRepository.GetAsync(ageGroupId, cancellationToken) ?? throw new InvalidOperationException("Age group was not found.");

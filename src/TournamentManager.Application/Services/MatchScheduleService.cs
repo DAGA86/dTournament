@@ -10,7 +10,13 @@ public sealed class MatchScheduleService(IAgeGroupRepository ageGroupRepository,
     public async Task<IReadOnlyList<MatchDto>> ListByAgeGroupAsync(Guid ageGroupId, CancellationToken cancellationToken = default)
     {
         var matches = await matchRepository.ListByAgeGroupAsync(ageGroupId, cancellationToken);
-        return matches.Select(x => new MatchDto(x.Id, x.AgeGroupId, x.HomeTeam?.Name ?? string.Empty, x.AwayTeam?.Name ?? string.Empty, x.RoundNumber, x.ScheduledStartUtc, x.Venue?.Name, x.PlannedDurationMinutes, x.Status)).ToList();
+        return matches.Select(x => new MatchDto(x.Id, x.AgeGroupId, x.HomeTeamId, x.HomeTeam?.Name ?? string.Empty, x.AwayTeamId, x.AwayTeam?.Name ?? string.Empty, x.RoundNumber, x.ScheduledStartUtc, x.Venue?.Name, x.PlannedDurationMinutes, x.Status, x.HomeScore, x.AwayScore)).ToList();
+    }
+
+    public async Task<IReadOnlyList<MatchDto>> ListByTeamAsync(Guid teamId, CancellationToken cancellationToken = default)
+    {
+        var matches = await matchRepository.ListByTeamAsync(teamId, cancellationToken);
+        return matches.Select(x => new MatchDto(x.Id, x.AgeGroupId, x.HomeTeamId, x.HomeTeam?.Name ?? string.Empty, x.AwayTeamId, x.AwayTeam?.Name ?? string.Empty, x.RoundNumber, x.ScheduledStartUtc, x.Venue?.Name, x.PlannedDurationMinutes, x.Status, x.HomeScore, x.AwayScore)).ToList();
     }
 
     public async Task<IReadOnlyList<GeneratedMatchDto>> PreviewAsync(Guid ageGroupId, CancellationToken cancellationToken = default)
@@ -54,6 +60,12 @@ public sealed class MatchScheduleService(IAgeGroupRepository ageGroupRepository,
         await matchRepository.SaveChangesAsync(cancellationToken);
     }
 
+    public async Task<IReadOnlyList<TournamentManager.Domain.Entities.Match>> ListFinishedGoalEventsByTeamAsync(Guid teamId, CancellationToken cancellationToken = default)
+    {
+        var matches = await matchRepository.ListByTeamWithGoalEventsAsync(teamId, cancellationToken);
+        return matches.Where(x => x.Status == MatchStatus.Finished).ToList();
+    }
+    
     public async Task<Guid> CreateManualAsync(Guid ageGroupId, Guid homeTeamId, Guid awayTeamId, int roundNumber, DateTimeOffset? scheduledStartUtc, Guid? venueId, CancellationToken cancellationToken = default)
     {
         var ageGroup = await ageGroupRepository.GetAsync(ageGroupId, cancellationToken) ?? throw new InvalidOperationException("Age group was not found.");

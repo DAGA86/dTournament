@@ -6,6 +6,8 @@ public interface IMatchRepository
 {
     Task<IReadOnlyList<Domain.Entities.Match>> ListByAgeGroupAsync(Guid ageGroupId, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<Domain.Entities.Match>> ListByAgeGroupWithTeamsAsync(Guid ageGroupId, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<Domain.Entities.Match>> ListByTeamAsync(Guid teamId, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<Domain.Entities.Match>> ListByTeamWithGoalEventsAsync(Guid teamId, CancellationToken cancellationToken = default); 
     Task<IReadOnlyList<Domain.Entities.Match>> ListFinishedByAgeGroupAsync(Guid ageGroupId, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<Domain.Entities.Match>> ListFinishedByTournamentAsync(Guid tournamentId, CancellationToken cancellationToken = default);
     Task<Domain.Entities.Match?> GetForManagementAsync(Guid matchId, CancellationToken cancellationToken = default);

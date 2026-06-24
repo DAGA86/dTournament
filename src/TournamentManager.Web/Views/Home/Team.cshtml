@@ -1,0 +1,35 @@
+﻿@model TournamentManager.Web.ViewModels.PublicTeamDetailViewModel
+@using TournamentManager.Domain.Enums
+@{
+    ViewData["Title"] = Model.Team.Name;
+    ViewData["HideMainMenu"] = true;
+}
+<a class="btn btn-link px-0" asp-action="AgeGroup" asp-route-id="@Model.Team.AgeGroupId">← Voltar ao escalão</a>
+<h1 class="h3">@Model.Team.Name</h1>
+<p class="text-muted">@Model.Team.Club</p>
+
+<h2 class="h5 mt-4">Jogadores e golos marcados</h2>
+<div class="table-responsive card shadow-sm mb-4">
+    <table class="table table-sm align-middle mb-0">
+        <thead><tr><th>#</th><th>Jogador</th><th>Golos</th></tr></thead>
+        <tbody>
+            @foreach (var player in Model.Players)
+            {
+                <tr><td>@(player.ShirtNumber?.ToString() ?? "-")</td><td>@player.DisplayName</td><td><strong>@player.Goals</strong></td></tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<h2 class="h5">Calendário da equipa</h2>
+<div class="list-group shadow-sm">
+    @foreach (var match in Model.Matches)
+    {
+        var hasResult = match.Status == MatchStatus.Finished && match.HomeScore.HasValue && match.AwayScore.HasValue;
+        <div class="list-group-item">
+            <div class="d-flex justify-content-between"><strong>Jornada @match.RoundNumber</strong><span class="badge bg-secondary">@match.Status</span></div>
+            <div>@match.HomeTeamName @(hasResult ? match.HomeScore : null) - @(hasResult ? match.AwayScore : null) @match.AwayTeamName</div>
+            <div class="text-muted small">@(match.ScheduledStartUtc?.ToString("dd/MM/yyyy HH:mm") ?? "Sem data") · @(match.VenueName ?? "Sem campo")</div>
+        </div>
+    }
+</div>

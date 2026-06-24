@@ -1,0 +1,21 @@
+﻿@model TournamentManager.Web.ViewModels.PublicTournamentIndexViewModel
+@{
+    ViewData["Title"] = "Torneio";
+    ViewData["HideMainMenu"] = true;
+}
+<section class="text-center py-4">
+    <h1 class="display-6 fw-bold">IX Abel Costa</h1>
+    <p class="lead text-muted">Selecione o escalão para acompanhar jogos, calendário e classificação.</p>
+</section>
+<div class="row g-3 justify-content-center">
+    @foreach (var ageGroup in Model.AgeGroups)
+    {
+        <div class="col-12 col-sm-6 col-lg-4">
+            <a class="btn btn-primary btn-lg w-100 py-4 shadow-sm" asp-action="AgeGroup" asp-route-id="@ageGroup.Id">@ageGroup.Name</a>
+        </div>
+    }
+</div>
+@if (!Model.AgeGroups.Any())
+{
+    <div class="alert alert-info">Ainda não existem escalões publicados para este torneio.</div>
+}

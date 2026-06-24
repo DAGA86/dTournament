@@ -8,7 +8,8 @@ public sealed class MatchRepository(ApplicationDbContext dbContext) : IMatchRepo
 {
     public async Task<IReadOnlyList<Match>> ListByAgeGroupAsync(Guid ageGroupId, CancellationToken cancellationToken = default) => await dbContext.Matches.Include(x => x.HomeTeam).Include(x => x.AwayTeam).Include(x => x.Venue).Where(x => x.AgeGroupId == ageGroupId).OrderBy(x => x.RoundNumber).ThenBy(x => x.ScheduledStartUtc).ToListAsync(cancellationToken);
     public async Task<IReadOnlyList<Match>> ListByAgeGroupWithTeamsAsync(Guid ageGroupId, CancellationToken cancellationToken = default) => await dbContext.Matches.Include(x => x.HomeTeam).Include(x => x.AwayTeam).Where(x => x.AgeGroupId == ageGroupId).ToListAsync(cancellationToken);
-
+    public async Task<IReadOnlyList<Match>> ListByTeamAsync(Guid teamId, CancellationToken cancellationToken = default) => await dbContext.Matches.Include(x => x.HomeTeam).Include(x => x.AwayTeam).Include(x => x.Venue).Where(x => x.HomeTeamId == teamId || x.AwayTeamId == teamId).OrderBy(x => x.ScheduledStartUtc).ThenBy(x => x.RoundNumber).ToListAsync(cancellationToken);
+    public async Task<IReadOnlyList<Match>> ListByTeamWithGoalEventsAsync(Guid teamId, CancellationToken cancellationToken = default) => await dbContext.Matches.Include(x => x.GoalEvents).Where(x => x.HomeTeamId == teamId || x.AwayTeamId == teamId).ToListAsync(cancellationToken);
     public async Task<IReadOnlyList<Match>> ListFinishedByAgeGroupAsync(Guid ageGroupId, CancellationToken cancellationToken = default) => await dbContext.Matches
         .Include(x => x.GoalEvents).ThenInclude(x => x.Player).ThenInclude(x => x!.Team)
         .Include(x => x.PlayerOfTheMatchVotes).ThenInclude(x => x.Player).ThenInclude(x => x!.Team)
