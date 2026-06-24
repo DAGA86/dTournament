@@ -61,15 +61,15 @@ public sealed class MatchManagementService(IMatchRepository matchRepository, IPl
         await matchRepository.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task RegisterGoalAsync(Guid matchId, Guid teamId, Guid playerId, bool isOwnGoal, string userId, CancellationToken cancellationToken = default)
+    public async Task RegisterGoalAsync(Guid matchId, Guid teamId, Guid playerId, string userId, CancellationToken cancellationToken = default)
     {
         var match = await GetMatchAsync(matchId, cancellationToken);
         if (match.Status != MatchStatus.InProgress) throw new InvalidOperationException("Goals can only be registered while the match is in progress.");
         if (teamId != match.HomeTeamId && teamId != match.AwayTeamId) throw new InvalidOperationException("The goal team must be one of the match teams.");
         var player = await playerRepository.GetAsync(playerId, cancellationToken) ?? throw new InvalidOperationException("Player was not found.");
         if (!player.IsActive) throw new InvalidOperationException("Inactive players cannot be selected for new match events.");
-        if (!isOwnGoal && player.TeamId != teamId) throw new InvalidOperationException("A player cannot score for a team they do not belong to.");
-        if (isOwnGoal && player.TeamId == teamId) throw new InvalidOperationException("Own goal player must belong to the opposing team.");
+        if (player.TeamId != match.HomeTeamId && player.TeamId != match.AwayTeamId) throw new InvalidOperationException("The selected player must belong to one of the match teams.");
+        var isOwnGoal = player.TeamId != teamId;
         var now = DateTimeOffset.UtcNow;
         var currentPeriodNumber = match.GetCurrentPeriodNumber(now);
         var goal = new GoalEvent { MatchId = matchId, TeamId = teamId, PlayerId = playerId, MatchMinute = match.GetCurrentMatchMinute(now, currentPeriodNumber), MatchPeriodNumber = currentPeriodNumber, IsOwnGoal = isOwnGoal, RecordedByUserId = userId };
@@ -125,7 +125,7 @@ public sealed class MatchManagementService(IMatchRepository matchRepository, IPl
     private static MatchControlDto ToControlDto(Match match)
     {
         RecalculateScore(match);
-        var goals = match.GoalEvents.OrderBy(x => x.MatchMinute).ThenBy(x => x.RecordedAtUtc).Select(x => new GoalEventDto(x.Id, x.MatchId, x.Team?.Name ?? string.Empty, x.Player?.DisplayName ?? string.Empty, x.MatchMinute, x.MatchPeriodNumber, match.FormatMatchMinute(x.MatchMinute, x.MatchPeriodNumber), x.IsOwnGoal, x.IsActive, x.RecordedAtUtc)).ToList();
+        var goals = match.GoalEvents.OrderBy(x => x.MatchPeriodNumber).ThenBy(x => x.MatchMinute).ThenBy(x => x.RecordedAtUtc).Select(x => new GoalEventDto(x.Id, x.MatchId, x.Team?.Name ?? string.Empty, x.Player?.DisplayName ?? string.Empty, x.MatchMinute, x.MatchPeriodNumber, match.FormatMatchMinute(x.MatchMinute, x.MatchPeriodNumber), x.IsOwnGoal, x.IsActive, x.RecordedAtUtc)).ToList();
         var homePlayers = match.HomeTeam?.Players.Where(x => x.IsActive).OrderBy(x => x.ShirtNumber).ThenBy(x => x.DisplayName).Select(x => new PlayerSelectionDto(x.Id, x.TeamId, x.DisplayName, x.ShirtNumber)).ToList() ?? new List<PlayerSelectionDto>();
         var awayPlayers = match.AwayTeam?.Players.Where(x => x.IsActive).OrderBy(x => x.ShirtNumber).ThenBy(x => x.DisplayName).Select(x => new PlayerSelectionDto(x.Id, x.TeamId, x.DisplayName, x.ShirtNumber)).ToList() ?? new List<PlayerSelectionDto>();
         return new MatchControlDto(match.Id, match.HomeTeamId, match.AwayTeamId, match.HomeTeam?.Name ?? string.Empty, match.AwayTeam?.Name ?? string.Empty, match.HomeScore ?? 0, match.AwayScore ?? 0, match.Status, match.ActualStartUtc, match.ActualEndUtc, (long)match.GetElapsedPlayingTime(DateTimeOffset.UtcNow).TotalSeconds, match.GetCurrentPeriodNumber(DateTimeOffset.UtcNow), match.PlannedDurationMinutes, match.PlannedPeriodCount, match.PlannedPeriodDurationMinutes, goals, homePlayers, awayPlayers);
