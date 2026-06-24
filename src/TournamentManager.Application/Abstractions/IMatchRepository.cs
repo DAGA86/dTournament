@@ -1,5 +1,4 @@
-﻿using System.Text.RegularExpressions;
-using TournamentManager.Domain.Entities;
+﻿using TournamentManager.Domain.Entities;
 
 namespace TournamentManager.Application.Abstractions;
 
@@ -11,6 +10,7 @@ public interface IMatchRepository
     Task<IReadOnlyList<Domain.Entities.Match>> ListFinishedByTournamentAsync(Guid tournamentId, CancellationToken cancellationToken = default);
     Task<Domain.Entities.Match?> GetForManagementAsync(Guid matchId, CancellationToken cancellationToken = default);
     Task<bool> HasMatchesForAgeGroupAsync(Guid ageGroupId, CancellationToken cancellationToken = default);
+    Task<DateTimeOffset?> GetFirstScheduledStartForTeamAsync(Guid teamId, CancellationToken cancellationToken = default);
     Task AddRangeAsync(IEnumerable<Domain.Entities.Match> matches, CancellationToken cancellationToken = default);
     Task AddAsync(Domain.Entities.Match match, CancellationToken cancellationToken = default);
     Task AddGoalAsync(GoalEvent goalEvent, CancellationToken cancellationToken = default);

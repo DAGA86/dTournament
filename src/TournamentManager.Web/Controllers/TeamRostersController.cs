@@ -18,7 +18,8 @@ public sealed class TeamRostersController(TeamRosterSubmissionService rosterServ
     public async Task<IActionResult> Edit(Guid teamId, TeamRosterSubmissionViewModel model, CancellationToken cancellationToken)
     {
         model.TeamId = teamId;
-        await PopulateTeamNameAsync(model, cancellationToken);
+        try { await PopulateTeamNameAsync(model, cancellationToken); }
+        catch (InvalidOperationException) { return NotFound(); }
         ModelState.ClearValidationState(string.Empty);
         if (!TryValidateModel(model)) return View(model);
         try

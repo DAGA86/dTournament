@@ -4,13 +4,14 @@ using TournamentManager.Domain.Entities;
 
 namespace TournamentManager.Application.Services;
 
-public sealed class TeamRosterSubmissionService(ITeamRepository teamRepository, IPlayerRepository playerRepository, ITeamStaffMemberRepository staffRepository)
+public sealed class TeamRosterSubmissionService(ITeamRepository teamRepository, IPlayerRepository playerRepository, ITeamStaffMemberRepository staffRepository, IMatchRepository matchRepository)
 {
     public const int MaximumPlayers = 14;
     public const int MaximumStaffMembers = 3;
 
     public async Task<TeamRosterTeamDto> GetTeamAsync(Guid teamId, CancellationToken cancellationToken = default)
     {
+        if (!await IsSubmissionOpenAsync(teamId, cancellationToken)) throw new InvalidOperationException("Roster submissions are closed for this team.");
         var team = await teamRepository.GetAsync(teamId, cancellationToken) ?? throw new InvalidOperationException("Team was not found.");
         var ageGroup = team.AgeGroup ?? throw new InvalidOperationException("Team age group was not loaded.");
         return new TeamRosterTeamDto(team.Id, team.Name, ageGroup.Name, ageGroup.BirthYearFrom, ageGroup.BirthYearTo);
@@ -22,11 +23,18 @@ public sealed class TeamRosterSubmissionService(ITeamRepository teamRepository, 
     public async Task<IReadOnlyList<TeamStaffMemberDto>> ListStaffAsync(Guid teamId, CancellationToken cancellationToken = default) =>
         (await staffRepository.ListByTeamAsync(teamId, cancellationToken)).Select(s => new TeamStaffMemberDto(s.Id, s.TeamId, s.FullName, s.Role, s.IsActive)).ToList();
 
+    public async Task<bool> IsSubmissionOpenAsync(Guid teamId, CancellationToken cancellationToken = default)
+    {
+        var firstScheduledStartUtc = await matchRepository.GetFirstScheduledStartForTeamAsync(teamId, cancellationToken);
+        return !firstScheduledStartUtc.HasValue || DateTimeOffset.UtcNow.UtcDateTime.Date < firstScheduledStartUtc.Value.UtcDateTime.Date;
+    }
+
     public async Task SubmitAsync(Guid teamId, IReadOnlyList<(string? FullName, int? ShirtNumber, DateOnly? BirthDate)> playerEntries, IReadOnlyList<(string? FullName, string? Role)> staffEntries, CancellationToken cancellationToken = default)
     {
+        if (!await IsSubmissionOpenAsync(teamId, cancellationToken)) throw new InvalidOperationException("Roster submissions are closed for this team.");
         var team = await teamRepository.GetAsync(teamId, cancellationToken) ?? throw new InvalidOperationException("Team was not found.");
         var players = playerEntries.Where(x => !string.IsNullOrWhiteSpace(x.FullName)).Select(x => new Player { TeamId = team.Id, FullName = x.FullName!.Trim(), DisplayName = x.FullName!.Trim(), BirthDate = x.BirthDate ?? throw new InvalidOperationException("Player birth date is required."), ShirtNumber = x.ShirtNumber }).ToList();
-        var staff = staffEntries.Where(x => !string.IsNullOrWhiteSpace(x.FullName) || !string.IsNullOrWhiteSpace(x.Role)).Select(x => new TeamStaffMember { TeamId = team.Id, FullName = x.FullName?.Trim() ?? string.Empty, Role = (x.Role ?? string.Empty).Trim() }).ToList();
+        var staff = staffEntries.Where(x => !string.IsNullOrWhiteSpace(x.FullName)).Select(x => new TeamStaffMember { TeamId = team.Id, FullName = x.FullName?.Trim() ?? string.Empty, Role = (x.Role ?? string.Empty).Trim() }).ToList();
         if (players.Count > MaximumPlayers) throw new InvalidOperationException($"A maximum of {MaximumPlayers} players can be submitted.");
         if (staff.Count > MaximumStaffMembers) throw new InvalidOperationException($"A maximum of {MaximumStaffMembers} staff members can be submitted.");
         if (players.Select(x => x.ShirtNumber).Where(x => x.HasValue).GroupBy(x => x!.Value).Any(x => x.Count() > 1)) throw new InvalidOperationException("Player shirt numbers must be unique within the team.");

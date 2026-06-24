@@ -22,6 +22,11 @@ public sealed class MatchRepository(ApplicationDbContext dbContext) : IMatchRepo
         .ToListAsync(cancellationToken);
     public Task<Match?> GetForManagementAsync(Guid matchId, CancellationToken cancellationToken = default) => dbContext.Matches.Include(x => x.HomeTeam).ThenInclude(x => x!.Players).Include(x => x.AwayTeam).ThenInclude(x => x!.Players).Include(x => x.GoalEvents).ThenInclude(x => x.Team).Include(x => x.GoalEvents).ThenInclude(x => x.Player).Include(x => x.PlayerOfTheMatchVotes).FirstOrDefaultAsync(x => x.Id == matchId, cancellationToken);
     public Task<bool> HasMatchesForAgeGroupAsync(Guid ageGroupId, CancellationToken cancellationToken = default) => dbContext.Matches.AnyAsync(x => x.AgeGroupId == ageGroupId, cancellationToken);
+    public async Task<DateTimeOffset?> GetFirstScheduledStartForTeamAsync(Guid teamId, CancellationToken cancellationToken = default) => await dbContext.Matches
+        .Where(x => (x.HomeTeamId == teamId || x.AwayTeamId == teamId) && x.ScheduledStartUtc.HasValue)
+        .OrderBy(x => x.ScheduledStartUtc)
+        .Select(x => x.ScheduledStartUtc)
+        .FirstOrDefaultAsync(cancellationToken);
     public async Task AddRangeAsync(IEnumerable<Match> matches, CancellationToken cancellationToken = default) => await dbContext.Matches.AddRangeAsync(matches, cancellationToken);
     public async Task AddAsync(Match match, CancellationToken cancellationToken = default) => await dbContext.Matches.AddAsync(match, cancellationToken);
     public async Task AddGoalAsync(GoalEvent goalEvent, CancellationToken cancellationToken = default) => await dbContext.GoalEvents.AddAsync(goalEvent, cancellationToken);

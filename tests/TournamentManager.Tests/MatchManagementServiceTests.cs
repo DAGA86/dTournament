@@ -108,6 +108,7 @@ public sealed class MatchManagementServiceTests
         public Task<IReadOnlyList<Match>> ListFinishedByTournamentAsync(Guid tournamentId, CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyList<Match>>(matches);
         public Task<Match?> GetForManagementAsync(Guid matchId, CancellationToken cancellationToken = default) => Task.FromResult(matches.FirstOrDefault(x => x.Id == matchId));
         public Task<bool> HasMatchesForAgeGroupAsync(Guid ageGroupId, CancellationToken cancellationToken = default) => Task.FromResult(matches.Any());
+        public Task<DateTimeOffset?> GetFirstScheduledStartForTeamAsync(Guid teamId, CancellationToken cancellationToken = default) => Task.FromResult<DateTimeOffset?>(matches.Where(x => (x.HomeTeamId == teamId || x.AwayTeamId == teamId) && x.ScheduledStartUtc.HasValue).OrderBy(x => x.ScheduledStartUtc).Select(x => x.ScheduledStartUtc).FirstOrDefault());
         public Task AddRangeAsync(IEnumerable<Match> matches, CancellationToken cancellationToken = default) => Task.CompletedTask;
         public Task AddAsync(Match match, CancellationToken cancellationToken = default) => Task.CompletedTask;
         public Task AddGoalAsync(GoalEvent goalEvent, CancellationToken cancellationToken = default) { AddedGoals.Add(goalEvent); return Task.CompletedTask; }

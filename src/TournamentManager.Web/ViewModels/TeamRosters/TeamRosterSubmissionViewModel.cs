@@ -18,10 +18,10 @@ public sealed class TeamRosterSubmissionViewModel : IValidatableObject
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
         var players = Players.Where(x => !string.IsNullOrWhiteSpace(x.FullName)).ToList();
-        var staffMembers = StaffMembers.Where(x => !string.IsNullOrWhiteSpace(x.FullName) || !string.IsNullOrWhiteSpace(x.Role)).ToList();
+        var staffMembers = StaffMembers.Where(x => !string.IsNullOrWhiteSpace(x.FullName)).ToList();
         if (players.Count > TeamRosterSubmissionService.MaximumPlayers) yield return new ValidationResult($"Só pode submeter até {TeamRosterSubmissionService.MaximumPlayers} jogadores.", [nameof(Players)]);
         if (staffMembers.Count > TeamRosterSubmissionService.MaximumStaffMembers) yield return new ValidationResult($"Só pode submeter até {TeamRosterSubmissionService.MaximumStaffMembers} elementos de staff.", [nameof(StaffMembers)]);
-        foreach (var staffMember in staffMembers.Where(x => string.IsNullOrWhiteSpace(x.FullName) || string.IsNullOrWhiteSpace(x.Role))) yield return new ValidationResult("Cada elemento de staff deve ter nome e função.", [nameof(StaffMembers)]);
+        foreach (var staffMember in staffMembers.Where(x => string.IsNullOrWhiteSpace(x.Role))) yield return new ValidationResult("Cada elemento de staff deve ter função.", [nameof(StaffMembers)]);
         var duplicateNumbers = players.Where(x => x.ShirtNumber.HasValue).GroupBy(x => x.ShirtNumber!.Value).Where(x => x.Count() > 1).Select(x => x.Key).ToList();
         if (duplicateNumbers.Count > 0) yield return new ValidationResult("Os números dos jogadores não podem estar repetidos.", [nameof(Players)]);
 
