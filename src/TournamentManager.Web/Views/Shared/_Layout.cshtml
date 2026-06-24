@@ -3,13 +3,27 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>@ViewData["Title"] - Tournament Manager</title>
+    <title>@ViewData["Title"] - dTournament by daga</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
     <link rel="manifest" href="~/manifest.webmanifest" />
     <link rel="stylesheet" href="~/css/site.css" />
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary"><div class="container-fluid"><a class="navbar-brand" asp-controller="Tournaments" asp-action="Index">Torneios</a><div class="ms-auto"><a class="btn btn-sm btn-light me-1" asp-controller="Venues" asp-action="Index">Campos</a><a class="btn btn-sm btn-light me-1" asp-controller="Admin" asp-action="AuditLog">Auditoria</a><partial name="_LoginPartial" /></div></div></nav>
+    <nav class="navbar navbar-expand-lg navbar-dark" style="background-color:#fffa00;">
+        <div class="container-fluid">
+            @if (ViewData["HideMainMenu"] as bool? != true)
+            {
+                <a class="navbar-brand fs-1 fw-bold" style="color:black;" asp-controller="Tournaments" asp-action="Index"><img src="~/img/logo.png" width="150" /> IX Abel Costa</a>
+                <div class="ms-auto">
+                    <a class="btn btn-sm btn-light me-1" asp-controller="Venues" asp-action="Index">Campos</a><a class="btn btn-sm btn-light me-1" asp-controller="Admin" asp-action="AuditLog">Auditoria</a><partial name="_LoginPartial" />
+                </div>
+            }
+            else
+            {
+                <a class="navbar-brand fs-1 fw-bold" style="color:black;" asp-controller="Home" asp-action="Index"><img src="~/img/logo.png" width="150" /> IX Abel Costa</a>
+            }
+        </div>
+    </nav>
     <main class="container py-3">@RenderBody()</main>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>@await RenderSectionAsync("Scripts", false)
     <script>if ('serviceWorker' in navigator) { navigator.serviceWorker.register('/service-worker.js'); }</script>
