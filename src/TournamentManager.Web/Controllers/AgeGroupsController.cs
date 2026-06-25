@@ -6,7 +6,7 @@ using TournamentManager.Web.ViewModels.AgeGroups;
 namespace TournamentManager.Web.Controllers;
 
 [Authorize(Policy = "AuthenticatedViewer")]
-public sealed class AgeGroupsController(AgeGroupService ageGroupService, VenueService venueService) : Controller
+public sealed class AgeGroupsController(AgeGroupService ageGroupService, VenueService venueService, TournamentService tournamentService) : Controller
 {
     public async Task<IActionResult> Index(Guid tournamentId, CancellationToken cancellationToken)
     {
@@ -17,7 +17,7 @@ public sealed class AgeGroupsController(AgeGroupService ageGroupService, VenueSe
     [Authorize(Policy = "AdministratorOnly")]
     public async Task<IActionResult> Create(Guid tournamentId, CancellationToken cancellationToken)
     {
-        await PopulateCreateListsAsync(cancellationToken);
+        await PopulateCreateListsAsync(tournamentId, cancellationToken);
         return View(new AgeGroupCreateViewModel { TournamentId = tournamentId });
     }
 
@@ -26,25 +26,25 @@ public sealed class AgeGroupsController(AgeGroupService ageGroupService, VenueSe
     {
         if (!ModelState.IsValid)
         {
-            await PopulateCreateListsAsync(cancellationToken);
+            await PopulateCreateListsAsync(model.TournamentId, cancellationToken);
             return View(model);
         }
         try
         {
-            var plannedMatches = model.PlannedMatches.Select(x => new PlannedMatchInput(x.RoundNumber, x.Phase, x.ScheduledStartUtc, x.VenueId)).ToList();
+            var plannedMatches = model.PlannedMatches.Select(x => new PlannedMatchInput(x.RoundNumber, x.Phase, x.GroupDisplayOrder, x.ScheduledStartUtc, x.VenueId)).ToList();
             await ageGroupService.CreateAsync(model.TournamentId, model.Name, model.BirthYearFrom, model.BirthYearTo, model.MatchDurationMinutes, model.NumberOfPeriods, model.HalfTimeBreakMinutes, model.CompetitionFormat, model.GroupCount, model.FinalsStartPhase, plannedMatches, cancellationToken);
             return RedirectToAction(nameof(Index), new { tournamentId = model.TournamentId });
         }
         catch (InvalidOperationException ex)
         {
             ModelState.AddModelError(string.Empty, ex.Message);
-            await PopulateCreateListsAsync(cancellationToken);
+            await PopulateCreateListsAsync(model.TournamentId, cancellationToken);
             return View(model);
         }
     }
 
-    private async Task PopulateCreateListsAsync(CancellationToken cancellationToken)
+    private async Task PopulateCreateListsAsync(Guid tournamentId, CancellationToken cancellationToken)
     {
-        ViewBag.Venues = await venueService.ListAsync(cancellationToken);
+        ViewBag.TournamentStartsOn = (await tournamentService.GetAsync(tournamentId, cancellationToken))?.StartsOn;
     }
 }

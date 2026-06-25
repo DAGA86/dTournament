@@ -2,6 +2,8 @@
 @{
     ViewData["Title"] = "Criar escalão";
     var venues = ViewBag.Venues as IReadOnlyList<VenueDto> ?? Array.Empty<VenueDto>();
+    var tournamentStartsOn = ViewBag.TournamentStartsOn as DateOnly?;
+    var tournamentStartsAt = tournamentStartsOn.HasValue ? $"{tournamentStartsOn.Value:yyyy-MM-dd}T00:00" : null;
 }
 <h1 class="h3">Criar escalão</h1>
 <form asp-action="Create" method="post" class="vstack gap-3">
@@ -43,11 +45,16 @@
 </form>
 <script>
     const venues = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(venues.Select(v => new { v.Id, v.Name })));
+    const tournamentStartsAt = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(tournamentStartsAt));
     const phaseLabels = {0:'Liga',1:'Fase de grupos',2:'Oitavos',3:'Quartos',4:'Meia-final',5:'3.º/4.º lugar',6:'Final'};
     function gamesForPhase(p){ return p==2?8:p==3?4:p==4?2:p==6?1:0; }
-    function appendRow(container, i, round, phase){
+    function appendRow(container, i, round, phase, group){
       const venueOptions = venues.map(v => `<option value="${v.Id}">${v.Name}</option>`).join('');
-      container.insertAdjacentHTML('beforeend', `<div class="row g-2 align-items-end border rounded p-2"><div class="col-md-2"><label class="form-label">Jornada/ronda</label><input name="PlannedMatches[${i}].RoundNumber" value="${round}" class="form-control" /></div><div class="col-md-2"><label class="form-label">Fase</label><input type="hidden" name="PlannedMatches[${i}].Phase" value="${phase}" /><input value="${phaseLabels[phase] ?? phase}" class="form-control" readonly /></div><div class="col-md-4"><label class="form-label">Data/hora</label><input name="PlannedMatches[${i}].ScheduledStartUtc" type="datetime-local" class="form-control" /></div><div class="col-md-4"><label class="form-label">Campo</label><select name="PlannedMatches[${i}].VenueId" class="form-select"><option value="">Sem campo</option>${venueOptions}</select></div></div>`);
+      const groupField = phase === 1 && group
+        ? `<div class="col-md-2"><label class="form-label">Grupo</label><input type="hidden" name="PlannedMatches[${i}].GroupDisplayOrder" value="${group}" /><input value="Grupo ${String.fromCharCode(64 + group)}" class="form-control" readonly /></div>`
+        : '';
+      const dateValue = tournamentStartsAt ? ` value="${tournamentStartsAt}"` : '';
+      container.insertAdjacentHTML('beforeend', `<div class="row g-2 align-items-end border rounded p-2"><div class="col-md-2"><label class="form-label">Jornada/ronda</label><input name="PlannedMatches[${i}].RoundNumber" value="${round}" class="form-control" readonly /></div><div class="col-md-2"><label class="form-label">Fase</label><input type="hidden" name="PlannedMatches[${i}].Phase" value="${phase}" /><input value="${phaseLabels[phase] ?? phase}" class="form-control" readonly /></div>${groupField}<div class="col-md-3"><label class="form-label">Data/hora</label><input name="PlannedMatches[${i}].ScheduledStartUtc" type="datetime-local" class="form-control"${dateValue} /></div><div class="col-md-3"><label class="form-label">Campo</label><select name="PlannedMatches[${i}].VenueId" class="form-select"><option value="">Sem campo</option>${venueOptions}</select></div></div>`);
     }
     function toggleFormatOptions(format){
       document.querySelectorAll('[data-format-option]').forEach(element => {
@@ -66,7 +73,7 @@
        for(let m=1;m<=fixedMatchesTotal;m++) appendRow(c, i++, m, 0);
      } else if(format===2){
        const teamsPerGroup = Math.floor(teams/groups), groupRounds = teamsPerGroup*(teamsPerGroup-1)/2;
-       for(let round=1;round<=groupRounds;round++) for(let group=1;group<=groups;group++) appendRow(c, i++, round, 1);
+       for(let round=1;round<=groupRounds;round++) for(let group=1;group<=groups;group++) appendRow(c, i++, round, 1, group);
        for(const p of [2,3,4,6].filter(x=>x>=start)) for(let r=1;r<=gamesForPhase(p);r++) appendRow(c, i++, r, p);
        if(start<=4) appendRow(c, i++, 1, 5);
      } else {

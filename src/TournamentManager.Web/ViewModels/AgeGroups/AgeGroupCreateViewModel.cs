@@ -24,6 +24,7 @@ public sealed class AgeGroupPlannedMatchViewModel
 {
     [Range(1, 999)] public int RoundNumber { get; set; } = 1;
     public CompetitionPhase Phase { get; set; } = CompetitionPhase.League;
+    [Range(1, 26)] public int? GroupDisplayOrder { get; set; }
     public DateTimeOffset? ScheduledStartUtc { get; set; }
     public Guid? VenueId { get; set; }
 }
