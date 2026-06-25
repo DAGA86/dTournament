@@ -90,7 +90,7 @@ public sealed class MatchScheduleService(IAgeGroupRepository ageGroupRepository,
 
     private static string RoundLabel(MatchDto match) => match.Phase is CompetitionPhase.League or CompetitionPhase.GroupStage
         ? $"Jornada {match.RoundNumber}"
-        : $"{PhaseLabel(match.Phase)} {match.RoundNumber}";
+        : PhaseLabel(match.Phase);
 
     private static string PhaseLabel(CompetitionPhase phase) => phase switch
     {

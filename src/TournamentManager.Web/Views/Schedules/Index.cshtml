@@ -43,7 +43,7 @@
 
     static string RoundLabel(MatchDto match) => match.Phase is CompetitionPhase.League or CompetitionPhase.GroupStage
         ? $"Jornada {match.RoundNumber}"
-        : $"{PhaseLabel(match.Phase)} {match.RoundNumber}";
+        : PhaseLabel(match.Phase);
 }
 <div class="d-flex justify-content-between align-items-center gap-2 mb-3">
     <h1 class="h3 mb-0">@(liveOnly ? "Jogos a decorrer" : "Calendário")</h1>
