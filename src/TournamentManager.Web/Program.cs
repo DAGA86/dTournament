@@ -26,7 +26,6 @@ builder.Services.AddScoped<MatchScheduleService>();
 builder.Services.AddScoped<MatchManagementService>();
 builder.Services.AddScoped<StandingsCalculationService>();
 builder.Services.AddScoped<PlayerStatisticsService>();
-builder.Services.AddScoped<QualificationService>();
 builder.Services.AddScoped<KnockoutProgressionService>();
 builder.Services.AddScoped<AuditService>();
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>

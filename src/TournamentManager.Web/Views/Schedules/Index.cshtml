@@ -72,9 +72,25 @@
         <div class="list-group-item">
             <div class="d-flex justify-content-between"><strong>@RoundLabel(match)</strong><span class="badge @(isLive ? "bg-danger" : "bg-secondary")">@match.Status</span></div>
             <div>
-                <a asp-controller="Home" asp-action="Team" asp-route-id="@match.HomeTeamId">@match.HomeTeamName</a>
+                @if (match.HomeTeamId.HasValue)
+                {
+                    <a asp-controller="Home" asp-action="Team" asp-route-id="@match.HomeTeamId">@match.HomeTeamName</a>
+                }
+                else
+                {
+
+                    <span>@match.HomeTeamName</span>
+                }
                 @(hasResult ? (match.HomeScore ?? 0) : null) - @(hasResult ? (match.AwayScore ?? 0) : null)
-                <a asp-controller="Home" asp-action="Team" asp-route-id="@match.AwayTeamId">@match.AwayTeamName</a>
+                @if (match.AwayTeamId.HasValue)
+                {
+                    <a asp-controller="Home" asp-action="Team" asp-route-id="@match.AwayTeamId">@match.AwayTeamName</a>
+                }
+                else
+                {
+
+                    <span>@match.AwayTeamName</span>
+                }
             </div>
             <div class="text-muted small">@(match.ScheduledStartUtc?.ToString("dd/MM/yyyy HH:mm") ?? "Sem data") · @(match.VenueName ?? "Sem campo") · @match.PlannedDurationMinutes min</div>
             @if (isLive && !string.IsNullOrWhiteSpace(match.CurrentMatchMinuteDisplay))
@@ -102,7 +118,11 @@
             }
             @if (!publicView)
             {
-                <a class="btn btn-sm btn-outline-primary mt-2" asp-controller="MatchManagement" asp-action="Control" asp-route-id="@match.Id">Gerir jogo</a>
+                <a class="btn btn-sm btn-outline-secondary mt-2 me-2" asp-action="EditTeams" asp-route-id="@match.Id" asp-route-ageGroupId="@ageGroupId">Opções do jogo</a>
+                @if (match.HomeTeamId.HasValue && match.AwayTeamId.HasValue)
+                {
+                    <a class="btn btn-sm btn-outline-primary mt-2" asp-controller="MatchManagement" asp-action="Control" asp-route-id="@match.Id">Gerir jogo</a>
+                }
             }
         </div>
     }

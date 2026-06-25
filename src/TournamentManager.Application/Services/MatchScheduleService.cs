@@ -63,6 +63,24 @@ public sealed class MatchScheduleService(IAgeGroupRepository ageGroupRepository,
         return match.Id;
     }
 
+    public async Task UpdateTeamsAsync(Guid matchId, Guid homeTeamId, Guid awayTeamId, CancellationToken cancellationToken = default)
+    {
+        if (homeTeamId == awayTeamId) throw new InvalidOperationException("A team cannot play against itself.");
+        var match = await matchRepository.GetForManagementAsync(matchId, cancellationToken) ?? throw new InvalidOperationException("Match was not found.");
+        if (match.Status != MatchStatus.Scheduled) throw new InvalidOperationException("Only scheduled matches can have teams changed.");
+        var ageGroup = await ageGroupRepository.GetAsync(match.AgeGroupId, cancellationToken) ?? throw new InvalidOperationException("Age group was not found.");
+        var teams = await teamRepository.ListByAgeGroupAsync(match.AgeGroupId, cancellationToken);
+        var homeTeam = teams.FirstOrDefault(x => x.Id == homeTeamId) ?? throw new InvalidOperationException("Home team was not found.");
+        var awayTeam = teams.FirstOrDefault(x => x.Id == awayTeamId) ?? throw new InvalidOperationException("Away team was not found.");
+        if (match.Phase == CompetitionPhase.GroupStage && homeTeam.GroupId != awayTeam.GroupId) throw new InvalidOperationException("Group stage matches must be between teams from the same group.");
+        match.HomeTeamId = homeTeamId;
+        match.AwayTeamId = awayTeamId;
+        match.GroupId = match.Phase == CompetitionPhase.GroupStage ? homeTeam.GroupId : null;
+        match.UpdatedAtUtc = DateTimeOffset.UtcNow;
+        match.Validate();
+        await matchRepository.SaveChangesAsync(cancellationToken);
+    }
+
     private static MatchDto ToDto(Match match)
     {
         var now = DateTimeOffset.UtcNow;
@@ -75,6 +93,6 @@ public sealed class MatchScheduleService(IAgeGroupRepository ageGroupRepository,
             .Select(x => new MatchGoalDto(x.Team?.Name ?? string.Empty, x.Player?.DisplayName ?? string.Empty, x.MatchMinute, x.MatchPeriodNumber, match.FormatMatchMinute(x.MatchMinute, x.MatchPeriodNumber), x.IsOwnGoal, x.IsActive))
             .ToList();
 
-        return new MatchDto(match.Id, match.AgeGroupId, match.HomeTeamId, match.HomeTeam?.Name ?? string.Empty, match.AwayTeamId, match.AwayTeam?.Name ?? string.Empty, match.RoundNumber, match.ScheduledStartUtc, match.Venue?.Name, match.PlannedDurationMinutes, match.Status, match.HomeScore, match.AwayScore, match.Phase, currentMinute, currentMinute.HasValue ? match.FormatMatchMinute(currentMinute.Value, periodNumber) : null, periodNumber, match.PlannedPeriodCount, goals);
+        return new MatchDto(match.Id, match.AgeGroupId, match.HomeTeamId, match.HomeTeam?.Name ?? "A definir", match.AwayTeamId, match.AwayTeam?.Name ?? "A definir", match.RoundNumber, match.ScheduledStartUtc, match.Venue?.Name, match.PlannedDurationMinutes, match.Status, match.HomeScore, match.AwayScore, match.Phase, currentMinute, currentMinute.HasValue ? match.FormatMatchMinute(currentMinute.Value, periodNumber) : null, periodNumber, match.PlannedPeriodCount, goals);
     }
 }

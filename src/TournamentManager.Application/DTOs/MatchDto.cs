@@ -7,9 +7,9 @@ public sealed record MatchGoalDto(string TeamName, string PlayerName, int MatchM
 public sealed record MatchDto(
     Guid Id,
     Guid AgeGroupId,
-    Guid HomeTeamId,
+    Guid? HomeTeamId,
     string HomeTeamName,
-    Guid AwayTeamId,
+    Guid? AwayTeamId,
     string AwayTeamName,
     int RoundNumber,
     DateTimeOffset? ScheduledStartUtc,

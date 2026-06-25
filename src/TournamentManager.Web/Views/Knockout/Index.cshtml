@@ -9,7 +9,7 @@
     <a class="btn btn-link px-0" asp-controller="AgeGroups" asp-action="Index" asp-route-tournamentId="@ageGroup.TournamentId">← Voltar à gestão do escalão</a>
 }
 <div class="d-flex justify-content-between align-items-center gap-2 mb-3"><h1 class="h3 mb-0">Fase final</h1></div>
-<div class="row g-2 mb-3"><div class="col-6"><form asp-action="CreateNextPhase" method="post"><input type="hidden" name="ageGroupId" value="@ageGroupId" /><button class="btn btn-primary w-100">Gerar próxima fase</button></form></div><div class="col-6"><form asp-action="ProgressFinals" method="post"><input type="hidden" name="ageGroupId" value="@ageGroupId" /><button class="btn btn-success w-100">Gerar ronda seguinte</button></form></div></div>
+<div class="alert alert-info">Faça a gestão dos jogos em Calendário → Opções do jogo.</div>
 <div class="list-group shadow-sm">
     @foreach (var match in Model)
     {

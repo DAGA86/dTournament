@@ -12,9 +12,9 @@ public sealed class Match : BaseEntity
     public Group? Group { get; set; }
     public CompetitionPhase Phase { get; set; } = CompetitionPhase.League;
     public int RoundNumber { get; set; }
-    public Guid HomeTeamId { get; set; }
+    public Guid? HomeTeamId { get; set; }
     public Team? HomeTeam { get; set; }
-    public Guid AwayTeamId { get; set; }
+    public Guid? AwayTeamId { get; set; }
     public Team? AwayTeam { get; set; }
     public DateTimeOffset? ScheduledStartUtc { get; set; }
     public Guid? VenueId { get; set; }
@@ -45,7 +45,7 @@ public sealed class Match : BaseEntity
 
     public Guid? GetWinnerTeamId()
     {
-        if (!IsKnockout || HomeTeamId == Guid.Empty || AwayTeamId == Guid.Empty) return null;
+        if (!IsKnockout || !HomeTeamId.HasValue || !AwayTeamId.HasValue) return null;
         var homeTotal = HomeScore ?? 0;
         var awayTotal = AwayScore ?? 0;
         if (homeTotal > awayTotal) return HomeTeamId;
@@ -121,7 +121,7 @@ public sealed class Match : BaseEntity
 
     public void Validate()
     {
-        if (HomeTeamId == AwayTeamId) throw new InvalidOperationException("A team cannot play against itself.");
+        if (HomeTeamId.HasValue && AwayTeamId.HasValue && HomeTeamId == AwayTeamId) throw new InvalidOperationException("A team cannot play against itself.");
         if (RoundNumber <= 0) throw new InvalidOperationException("Round number must be greater than zero.");
         if (PlannedDurationMinutes <= 0) throw new InvalidOperationException("Planned duration must be greater than zero.");
         if (PlannedPeriodCount is < 1 or > 2) throw new InvalidOperationException("Planned period count must be one or two.");

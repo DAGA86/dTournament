@@ -16,4 +16,15 @@ public sealed class AgeGroupCreateViewModel
     [Range(1, 16)] public int AdvancingTeamsPerGroup { get; set; } = 2;
     public CompetitionPhase FinalsStartPhase { get; set; } = CompetitionPhase.SemiFinal;
     public CompetitionFormat CompetitionFormat { get; set; }
+    [Range(0, 64)] public int TeamCount { get; set; } = 4;
+    [Range(0, 200)] public int FixedMatchCount { get; set; }
+    public List<AgeGroupPlannedMatchViewModel> PlannedMatches { get; set; } = [];
+}
+
+public sealed class AgeGroupPlannedMatchViewModel
+{
+    [Range(1, 999)] public int RoundNumber { get; set; } = 1;
+    public CompetitionPhase Phase { get; set; } = CompetitionPhase.League;
+    public DateTimeOffset? ScheduledStartUtc { get; set; }
+    public Guid? VenueId { get; set; }
 }

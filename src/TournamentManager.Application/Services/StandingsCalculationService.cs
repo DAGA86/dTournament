@@ -17,11 +17,11 @@ public sealed class StandingsCalculationService(IAgeGroupRepository ageGroupRepo
 
         foreach (var match in matches.Where(x => x.Status == MatchStatus.Finished))
         {
-            if (!rows.ContainsKey(match.HomeTeamId) || !rows.ContainsKey(match.AwayTeamId)) continue;
-            var homeGoals = CountGoals(match, match.HomeTeamId);
-            var awayGoals = CountGoals(match, match.AwayTeamId);
-            ApplyMatch(rows[match.HomeTeamId], homeGoals, awayGoals, ageGroup);
-            ApplyMatch(rows[match.AwayTeamId], awayGoals, homeGoals, ageGroup);
+            if (!match.HomeTeamId.HasValue || !match.AwayTeamId.HasValue || !rows.ContainsKey(match.HomeTeamId.Value) || !rows.ContainsKey(match.AwayTeamId.Value)) continue;
+            var homeGoals = CountGoals(match, match.HomeTeamId.Value);
+            var awayGoals = CountGoals(match, match.AwayTeamId.Value);
+            ApplyMatch(rows[match.HomeTeamId.Value], homeGoals, awayGoals, ageGroup);
+            ApplyMatch(rows[match.AwayTeamId.Value], awayGoals, homeGoals, ageGroup);
         }
 
         return rows.Values
@@ -46,11 +46,11 @@ public sealed class StandingsCalculationService(IAgeGroupRepository ageGroupRepo
             var rows = groupTeams.ToDictionary(x => x.Id, x => new MutableStanding(x.Id, x.Name));
             foreach (var match in matches.Where(x => x.GroupId == group.Id))
             {
-                if (!rows.ContainsKey(match.HomeTeamId) || !rows.ContainsKey(match.AwayTeamId)) continue;
-                var homeGoals = CountGoals(match, match.HomeTeamId);
-                var awayGoals = CountGoals(match, match.AwayTeamId);
-                ApplyMatch(rows[match.HomeTeamId], homeGoals, awayGoals, ageGroup);
-                ApplyMatch(rows[match.AwayTeamId], awayGoals, homeGoals, ageGroup);
+                if (!match.HomeTeamId.HasValue || !match.AwayTeamId.HasValue || !rows.ContainsKey(match.HomeTeamId.Value) || !rows.ContainsKey(match.AwayTeamId.Value)) continue;
+                var homeGoals = CountGoals(match, match.HomeTeamId.Value);
+                var awayGoals = CountGoals(match, match.AwayTeamId.Value);
+                ApplyMatch(rows[match.HomeTeamId.Value], homeGoals, awayGoals, ageGroup);
+                ApplyMatch(rows[match.AwayTeamId.Value], awayGoals, homeGoals, ageGroup);
             }
             result[group.Name] = rows.Values.OrderByDescending(x => x.Points).ThenByDescending(x => x.GoalDifference).ThenByDescending(x => x.GoalsFor).ThenBy(x => x.GoalsAgainst).ThenBy(x => x.TeamName).Select((x, index) => x.ToDto(index + 1)).ToList();
         }

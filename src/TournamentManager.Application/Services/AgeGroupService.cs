@@ -5,7 +5,7 @@ using TournamentManager.Domain.Enums;
 
 namespace TournamentManager.Application.Services;
 
-public sealed class AgeGroupService(IAgeGroupRepository ageGroupRepository, ITournamentRepository tournamentRepository)
+public sealed class AgeGroupService(IAgeGroupRepository ageGroupRepository, ITournamentRepository tournamentRepository, IMatchRepository matchRepository)
 {
     public async Task<IReadOnlyList<AgeGroupDto>> ListByTournamentAsync(Guid tournamentId, CancellationToken cancellationToken = default)
     {
@@ -15,7 +15,7 @@ public sealed class AgeGroupService(IAgeGroupRepository ageGroupRepository, ITou
 
     public async Task<AgeGroup?> GetEntityAsync(Guid ageGroupId, CancellationToken cancellationToken = default) => await ageGroupRepository.GetAsync(ageGroupId, cancellationToken);
 
-    public async Task<Guid> CreateAsync(Guid tournamentId, string name, int? birthYearFrom, int? birthYearTo, int matchDurationMinutes, int numberOfPeriods, int halfTimeBreakMinutes, CompetitionFormat competitionFormat, int groupCount, int advancingTeamsPerGroup, CompetitionPhase finalsStartPhase, CancellationToken cancellationToken = default)
+    public async Task<Guid> CreateAsync(Guid tournamentId, string name, int? birthYearFrom, int? birthYearTo, int matchDurationMinutes, int numberOfPeriods, int halfTimeBreakMinutes, CompetitionFormat competitionFormat, int groupCount, int advancingTeamsPerGroup, CompetitionPhase finalsStartPhase, IReadOnlyList<PlannedMatchInput>? plannedMatches = null, CancellationToken cancellationToken = default)
     {
         _ = await tournamentRepository.GetAsync(tournamentId, cancellationToken) ?? throw new InvalidOperationException("Tournament was not found.");
         var ageGroup = new AgeGroup
@@ -41,7 +41,29 @@ public sealed class AgeGroupService(IAgeGroupRepository ageGroupRepository, ITou
             }
         }
         await ageGroupRepository.AddAsync(ageGroup, cancellationToken);
+        if (plannedMatches is not null)
+        {
+            foreach (var planned in plannedMatches)
+            {
+                var match = new Match
+                {
+                    TournamentId = tournamentId,
+                    AgeGroupId = ageGroup.Id,
+                    Phase = planned.Phase,
+                    RoundNumber = planned.RoundNumber,
+                    ScheduledStartUtc = planned.ScheduledStartUtc,
+                    VenueId = planned.VenueId,
+                    PlannedDurationMinutes = matchDurationMinutes,
+                    PlannedPeriodCount = numberOfPeriods,
+                    HalfTimeBreakMinutes = halfTimeBreakMinutes
+                };
+                match.Validate();
+                await matchRepository.AddAsync(match, cancellationToken);
+            }
+        }
         await ageGroupRepository.SaveChangesAsync(cancellationToken);
         return ageGroup.Id;
     }
 }
+
+public sealed record PlannedMatchInput(int RoundNumber, CompetitionPhase Phase, DateTimeOffset? ScheduledStartUtc, Guid? VenueId);

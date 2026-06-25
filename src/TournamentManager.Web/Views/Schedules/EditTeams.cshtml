@@ -1,0 +1,20 @@
+﻿@model MatchTeamsEditViewModel
+@{
+    ViewData["Title"] = "Opções do jogo";
+    var teams = (IReadOnlyList<TeamDto>)ViewBag.Teams;
+}
+<h1 class="h3">Opções do jogo</h1>
+<form asp-action="EditTeams" method="post" class="vstack gap-3">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <input asp-for="MatchId" type="hidden" />
+    <input asp-for="AgeGroupId" type="hidden" />
+    <div><label asp-for="HomeTeamId" class="form-label">Equipa da casa</label><select asp-for="HomeTeamId" class="form-select"><option value="">Selecionar</option>@foreach (var team in teams) {
+        <option value="@team.Id">@team.Name</option>
+    }
+</select></div>
+<div><label asp-for="AwayTeamId" class="form-label">Equipa visitante</label><select asp-for="AwayTeamId" class="form-select"><option value="">Selecionar</option>@foreach (var team in teams) {
+    <option value="@team.Id">@team.Name</option>
+}
+</select></div>
+<button class="btn btn-primary btn-lg">Guardar</button>
+</form>

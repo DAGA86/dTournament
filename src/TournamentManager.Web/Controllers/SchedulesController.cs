@@ -44,10 +44,37 @@ public sealed class SchedulesController(MatchScheduleService matchScheduleServic
         }
     }
 
+    [Authorize(Policy = "AdministratorOnly")]
+    public async Task<IActionResult> EditTeams(Guid id, Guid ageGroupId, CancellationToken cancellationToken)
+    {
+        await PopulateManualMatchListsAsync(ageGroupId, cancellationToken);
+        return View(new MatchTeamsEditViewModel { MatchId = id, AgeGroupId = ageGroupId });
+    }
+
+    [HttpPost, Authorize(Policy = "AdministratorOnly"), ValidateAntiForgeryToken]
+    public async Task<IActionResult> EditTeams(MatchTeamsEditViewModel model, CancellationToken cancellationToken)
+    {
+        if (!ModelState.IsValid)
+        {
+            await PopulateManualMatchListsAsync(model.AgeGroupId, cancellationToken);
+            return View(model);
+        }
+        try
+        {
+            await matchScheduleService.UpdateTeamsAsync(model.MatchId, model.HomeTeamId, model.AwayTeamId, cancellationToken);
+            return RedirectToAction(nameof(Index), new { ageGroupId = model.AgeGroupId });
+        }
+        catch (InvalidOperationException ex)
+        {
+            ModelState.AddModelError(string.Empty, ex.Message);
+            await PopulateManualMatchListsAsync(model.AgeGroupId, cancellationToken);
+            return View(model);
+        }
+    }
+
     private async Task PopulateManualMatchListsAsync(Guid ageGroupId, CancellationToken cancellationToken)
     {
         ViewBag.Teams = await teamService.ListByAgeGroupAsync(ageGroupId, cancellationToken);
         ViewBag.Venues = await venueService.ListAsync(cancellationToken);
     }
-
 }
