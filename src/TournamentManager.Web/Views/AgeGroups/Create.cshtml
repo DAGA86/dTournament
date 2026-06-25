@@ -12,7 +12,35 @@
     <div><label asp-for="MatchDurationMinutes" class="form-label">Duração do jogo</label><input asp-for="MatchDurationMinutes" class="form-control" /></div>
     <div class="row g-2"><div class="col-6"><label asp-for="NumberOfPeriods" class="form-label">Partes</label><select asp-for="NumberOfPeriods" class="form-select"><option value="1">1 parte</option><option value="2">2 partes</option></select></div><div class="col-6"><label asp-for="HalfTimeBreakMinutes" class="form-label">Intervalo</label><input asp-for="HalfTimeBreakMinutes" class="form-control" /></div></div>
     <div><label asp-for="CompetitionFormat" class="form-label">Formato</label><select asp-for="CompetitionFormat" asp-items="Html.GetEnumSelectList<CompetitionFormat>()" class="form-select" id="competitionFormat"></select></div>
-    <div class="card border-primary"><div class="card-body vstack gap-3"><h2 class="h5">Configuração dos jogos</h2><div class="row g-2"><div class="col-md-3"><label asp-for="TeamCount" class="form-label">N.º equipas</label><input asp-for="TeamCount" class="form-control" id="teamCount" /></div><div class="col-md-3"><label asp-for="FixedMatchCount" class="form-label">N.º jogos fixos</label><input asp-for="FixedMatchCount" class="form-control" id="fixedMatchCount" /></div><div class="col-md-3"><label asp-for="GroupCount" class="form-label">N.º grupos</label><input asp-for="GroupCount" class="form-control" id="groupCount" /></div><div class="col-md-3"><label asp-for="FinalsStartPhase" class="form-label">Primeira fase final</label><select asp-for="FinalsStartPhase" asp-items="Html.GetEnumSelectList<CompetitionPhase>()" class="form-select" id="finalsStartPhase"></select></div></div><div><label asp-for="AdvancingTeamsPerGroup" class="form-label">Lugares apurados por grupo</label><input asp-for="AdvancingTeamsPerGroup" class="form-control" id="advancingTeamsPerGroup" /></div><p class="text-muted small mb-0">Ao guardar o escalão são criados jogos por agendar, sem equipas. As equipas da casa e visitante são escolhidas depois no novo ecrã de opções do jogo.</p></div></div>
+    <div class="card border-primary">
+        <div class="card-body vstack gap-3">
+            <h2 class="h5">Configuração dos jogos</h2>
+            <div class="row g-2">
+                <div class="col-md-3">
+                    <label asp-for="TeamCount" class="form-label">N.º equipas</label>
+                    <input asp-for="TeamCount" class="form-control" id="teamCount" />
+                </div>
+                <div class="col-md-3" data-format-option="fixedMatches">
+                    <label asp-for="FixedMatchCount" class="form-label">N.º jogos fixos por equipa</label>
+                    <input asp-for="FixedMatchCount" class="form-control" id="fixedMatchCount" />
+                    <div class="form-text">Total de jogos: <span id="fixedMatchesTotal">0</span></div>
+                </div>
+                <div class="col-md-3" data-format-option="groupStageAndFinals">
+                    <label asp-for="GroupCount" class="form-label">N.º grupos</label>
+                    <input asp-for="GroupCount" class="form-control" id="groupCount" />
+                </div>
+                <div class="col-md-3" data-format-option="groupStageAndFinals">
+                    <label asp-for="FinalsStartPhase" class="form-label">Primeira fase final</label>
+                    <select asp-for="FinalsStartPhase" asp-items="Html.GetEnumSelectList<CompetitionPhase>()" class="form-select" id="finalsStartPhase"></select>
+                </div>
+            </div>
+            <div data-format-option="groupStageAndFinals">
+                <label asp-for="AdvancingTeamsPerGroup" class="form-label">Lugares apurados por grupo</label>
+                <input asp-for="AdvancingTeamsPerGroup" class="form-control" id="advancingTeamsPerGroup" />
+            </div>
+            <p class="text-muted small mb-0">Ao guardar o escalão são criados jogos por agendar, sem equipas. As equipas da casa e visitante são escolhidas depois no novo ecrã de opções do jogo.</p>
+        </div>
+    </div>
     <div class="card"><div class="card-body"><div class="d-flex justify-content-between align-items-center"><h2 class="h5 mb-0">Jogos necessários</h2><button type="button" class="btn btn-sm btn-outline-secondary" id="rebuildMatches">Recalcular</button></div><div id="plannedMatches" class="vstack gap-2 mt-3"></div></div></div>
     <button class="btn btn-primary btn-lg">Guardar</button>
 </form>
@@ -24,12 +52,30 @@
       const venueOptions = venues.map(v => `<option value="${v.Id}">${v.Name}</option>`).join('');
       container.insertAdjacentHTML('beforeend', `<div class="row g-2 align-items-end border rounded p-2"><div class="col-md-2"><label class="form-label">Jornada/ronda</label><input name="PlannedMatches[${i}].RoundNumber" value="${round}" class="form-control" /></div><div class="col-md-2"><label class="form-label">Fase</label><input type="hidden" name="PlannedMatches[${i}].Phase" value="${phase}" /><input value="${phaseLabels[phase] ?? phase}" class="form-control" readonly /></div><div class="col-md-4"><label class="form-label">Data/hora</label><input name="PlannedMatches[${i}].ScheduledStartUtc" type="datetime-local" class="form-control" /></div><div class="col-md-4"><label class="form-label">Campo</label><select name="PlannedMatches[${i}].VenueId" class="form-select"><option value="">Sem campo</option>${venueOptions}</select></div></div>`);
     }
+    function toggleFormatOptions(format){
+      document.querySelectorAll('[data-format-option]').forEach(element => {
+        const applies = (element.dataset.formatOption === 'fixedMatches' && format === 1) || (element.dataset.formatOption === 'groupStageAndFinals' && format === 2);
+        element.classList.toggle('d-none', !applies);
+        element.querySelectorAll('input, select').forEach(input => input.disabled = !applies);
+      });
+    }
     function rebuild(){
      const c=document.getElementById('plannedMatches'); c.innerHTML=''; let i=0;
      const format=parseInt(document.getElementById('competitionFormat').value||0), teams=parseInt(document.getElementById('teamCount').value||0), groups=Math.max(1,parseInt(document.getElementById('groupCount').value||1)), fixed=parseInt(document.getElementById('fixedMatchCount').value||0), start=parseInt(document.getElementById('finalsStartPhase').value||4);
-     let count = format===1 ? fixed : format===2 ? Math.floor(teams/groups)*(Math.floor(teams/groups)-1)/2*groups : teams*(teams-1)/2;
-     for(let m=1;m<=count;m++) appendRow(c, i++, m, format===2?1:0);
-     if(format===2){ for(const p of [2,3,4,6].filter(x=>x>=start)) for(let r=1;r<=gamesForPhase(p);r++) appendRow(c, i++, r, p); if(start<=4) appendRow(c, i++, 1, 5); }
+     toggleFormatOptions(format);
+     const fixedMatchesTotal = Math.floor(teams * fixed / 2);
+     document.getElementById('fixedMatchesTotal').textContent = fixedMatchesTotal;
+     if(format===1){
+       for(let m=1;m<=fixedMatchesTotal;m++) appendRow(c, i++, m, 0);
+     } else if(format===2){
+       const teamsPerGroup = Math.floor(teams/groups), groupRounds = teamsPerGroup*(teamsPerGroup-1)/2;
+       for(let round=1;round<=groupRounds;round++) for(let group=1;group<=groups;group++) appendRow(c, i++, round, 1);
+       for(const p of [2,3,4,6].filter(x=>x>=start)) for(let r=1;r<=gamesForPhase(p);r++) appendRow(c, i++, r, p);
+       if(start<=4) appendRow(c, i++, 1, 5);
+     } else {
+       const count = teams*(teams-1)/2;
+       for(let m=1;m<=count;m++) appendRow(c, i++, m, 0);
+     }
     }
-    document.getElementById('rebuildMatches').addEventListener('click', rebuild); ['competitionFormat','teamCount','fixedMatchCount','groupCount','finalsStartPhase'].forEach(id=>document.getElementById(id).addEventListener('change', rebuild)); rebuild();
+    document.getElementById('rebuildMatches').addEventListener('click', rebuild); ['competitionFormat','teamCount','fixedMatchCount','groupCount','finalsStartPhase','advancingTeamsPerGroup'].forEach(id=>document.getElementById(id).addEventListener('change', rebuild)); rebuild();
 </script>
