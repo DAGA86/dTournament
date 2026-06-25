@@ -27,7 +27,7 @@
     {
         var hasResult = match.Status == MatchStatus.Finished && match.HomeScore.HasValue && match.AwayScore.HasValue;
         <div class="list-group-item">
-            <div class="d-flex justify-content-between"><strong>Jornada @match.RoundNumber</strong><span class="badge bg-secondary">@match.Status</span></div>
+            <div class="d-flex justify-content-between"><strong>@(match.ShowRoundNumber ? $"Jornada {match.RoundNumber}" : "Liga")</strong><span class="badge bg-secondary">@match.Status</span></div>
             <div>@match.HomeTeamName @(hasResult ? match.HomeScore : null) - @(hasResult ? match.AwayScore : null) @match.AwayTeamName</div>
             <div class="text-muted small">@(match.ScheduledStartUtc?.ToString("dd/MM/yyyy HH:mm") ?? "Sem data") · @(match.VenueName ?? "Sem campo")</div>
         </div>

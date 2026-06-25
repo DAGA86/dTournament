@@ -14,6 +14,13 @@ public sealed class AgeGroupsController(AgeGroupService ageGroupService, VenueSe
         return View(await ageGroupService.ListByTournamentAsync(tournamentId, cancellationToken));
     }
 
+    [HttpPost, Authorize(Policy = "AdministratorOnly"), ValidateAntiForgeryToken]
+    public async Task<IActionResult> SetDisplayOrder(Guid id, Guid tournamentId, int displayOrder, CancellationToken cancellationToken)
+    {
+        await ageGroupService.SetDisplayOrderAsync(id, displayOrder, cancellationToken);
+        return RedirectToAction(nameof(Index), new { tournamentId });
+    }
+    
     [Authorize(Policy = "AdministratorOnly")]
     public async Task<IActionResult> Create(Guid tournamentId, CancellationToken cancellationToken)
     {
@@ -32,7 +39,7 @@ public sealed class AgeGroupsController(AgeGroupService ageGroupService, VenueSe
         try
         {
             var plannedMatches = model.PlannedMatches.Select(x => new PlannedMatchInput(x.RoundNumber, x.Phase, x.GroupDisplayOrder, x.ScheduledStartUtc, x.VenueId)).ToList();
-            await ageGroupService.CreateAsync(model.TournamentId, model.Name, model.BirthYearFrom, model.BirthYearTo, model.MatchDurationMinutes, model.NumberOfPeriods, model.HalfTimeBreakMinutes, model.CompetitionFormat, model.GroupCount, model.FinalsStartPhase, plannedMatches, cancellationToken);
+            await ageGroupService.CreateAsync(model.TournamentId, model.Name, model.BirthYearFrom, model.BirthYearTo, model.MatchDurationMinutes, model.NumberOfPeriods, model.NumberOfPeriods == 1 ? 0 : model.HalfTimeBreakMinutes, model.CompetitionFormat, model.GroupCount, model.FinalsStartPhase, plannedMatches, cancellationToken);
             return RedirectToAction(nameof(Index), new { tournamentId = model.TournamentId });
         }
         catch (InvalidOperationException ex)

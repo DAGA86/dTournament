@@ -14,7 +14,14 @@
             <div class="card shadow-sm">
                 <div class="card-body">
                     <h2 class="h5">@ageGroup.Name</h2>
-                    <p class="text-muted">@ageGroup.CompetitionFormat · @ageGroup.MatchDurationMinutes min</p>
+                    <p class="text-muted">Ordem @ageGroup.DisplayOrder · @ageGroup.CompetitionFormat · @ageGroup.MatchDurationMinutes min</p>
+                    <form asp-action="SetDisplayOrder" method="post" class="input-group input-group-sm mb-3">
+                        <input type="hidden" name="id" value="@ageGroup.Id" />
+                        <input type="hidden" name="tournamentId" value="@tournamentId" />
+                        <span class="input-group-text">Ordem pública</span>
+                        <input name="displayOrder" type="number" min="0" class="form-control" value="@ageGroup.DisplayOrder" />
+                        <button class="btn btn-outline-secondary">Guardar</button>
+                    </form>
                     <div class="d-grid gap-2">
                         <a class="btn btn-outline-primary" asp-controller="Teams" asp-action="Index" asp-route-ageGroupId="@ageGroup.Id">Equipas</a>
                         <a class="btn btn-outline-secondary" asp-controller="Schedules" asp-action="Index" asp-route-ageGroupId="@ageGroup.Id">Calendário</a>

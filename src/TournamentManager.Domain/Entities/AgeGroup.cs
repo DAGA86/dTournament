@@ -8,6 +8,7 @@ public sealed class AgeGroup : BaseEntity
     public Guid TournamentId { get; set; }
     public Tournament? Tournament { get; set; }
     public string Name { get; set; } = string.Empty;
+    public int DisplayOrder { get; set; }
     public int? BirthYearFrom { get; set; }
     public int? BirthYearTo { get; set; }
     public int MatchDurationMinutes { get; set; } = 20;

@@ -10,17 +10,27 @@ public sealed class AgeGroupService(IAgeGroupRepository ageGroupRepository, ITou
     public async Task<IReadOnlyList<AgeGroupDto>> ListByTournamentAsync(Guid tournamentId, CancellationToken cancellationToken = default)
     {
         var ageGroups = await ageGroupRepository.ListByTournamentAsync(tournamentId, cancellationToken);
-        return ageGroups.Select(x => new AgeGroupDto(x.Id, x.TournamentId, x.Name, x.MatchDurationMinutes, x.CompetitionFormat)).ToList();
+        return ageGroups.Select(x => new AgeGroupDto(x.Id, x.TournamentId, x.Name, x.DisplayOrder, x.MatchDurationMinutes, x.CompetitionFormat)).ToList();
     }
 
     public async Task<AgeGroup?> GetEntityAsync(Guid ageGroupId, CancellationToken cancellationToken = default) => await ageGroupRepository.GetAsync(ageGroupId, cancellationToken);
 
+    public async Task SetDisplayOrderAsync(Guid ageGroupId, int displayOrder, CancellationToken cancellationToken = default)
+    {
+        var ageGroup = await ageGroupRepository.GetAsync(ageGroupId, cancellationToken) ?? throw new InvalidOperationException("Age group was not found.");
+        ageGroup.DisplayOrder = displayOrder;
+        ageGroup.UpdatedAtUtc = DateTimeOffset.UtcNow;
+        await ageGroupRepository.SaveChangesAsync(cancellationToken);
+    }
+    
     public async Task<Guid> CreateAsync(Guid tournamentId, string name, int? birthYearFrom, int? birthYearTo, int matchDurationMinutes, int numberOfPeriods, int halfTimeBreakMinutes, CompetitionFormat competitionFormat, int groupCount, CompetitionPhase finalsStartPhase, IReadOnlyList<PlannedMatchInput>? plannedMatches = null, CancellationToken cancellationToken = default)
     {
         _ = await tournamentRepository.GetAsync(tournamentId, cancellationToken) ?? throw new InvalidOperationException("Tournament was not found.");
+        var existingAgeGroups = await ageGroupRepository.ListByTournamentAsync(tournamentId, cancellationToken);
         var ageGroup = new AgeGroup
         {
             TournamentId = tournamentId,
+            DisplayOrder = existingAgeGroups.Count == 0 ? 1 : existingAgeGroups.Max(x => x.DisplayOrder) + 1,
             Name = name.Trim(),
             BirthYearFrom = birthYearFrom,
             BirthYearTo = birthYearTo,

@@ -10,8 +10,11 @@ public sealed class MatchScheduleService(IAgeGroupRepository ageGroupRepository,
     public async Task<IReadOnlyList<MatchDto>> ListByAgeGroupAsync(Guid ageGroupId, CancellationToken cancellationToken = default)
     {
         var matches = await matchRepository.ListByAgeGroupAsync(ageGroupId, cancellationToken);
+        var ageGroup = await ageGroupRepository.GetAsync(ageGroupId, cancellationToken);
+        var teams = await teamRepository.ListByAgeGroupAsync(ageGroupId, cancellationToken);
+        var showRoundNumber = ShouldShowRoundNumber(ageGroup?.CompetitionFormat, teams.Count(x => x.IsActive));
         return matches
-            .Select(ToDto)
+            .Select(match => ToDto(match, showRoundNumber))
             .OrderBy(x => !x.ScheduledStartUtc.HasValue)
             .ThenBy(x => x.ScheduledStartUtc)
             .ThenBy(ScheduleSortLabel, StringComparer.CurrentCulture)
@@ -21,7 +24,11 @@ public sealed class MatchScheduleService(IAgeGroupRepository ageGroupRepository,
     public async Task<IReadOnlyList<MatchDto>> ListByTeamAsync(Guid teamId, CancellationToken cancellationToken = default)
     {
         var matches = await matchRepository.ListByTeamAsync(teamId, cancellationToken);
-        return matches.Select(ToDto).ToList();
+        if (!matches.Any()) return [];
+        var ageGroup = await ageGroupRepository.GetAsync(matches[0].AgeGroupId, cancellationToken);
+        var teams = await teamRepository.ListByAgeGroupAsync(matches[0].AgeGroupId, cancellationToken);
+        var showRoundNumber = ShouldShowRoundNumber(ageGroup?.CompetitionFormat, teams.Count(x => x.IsActive));
+        return matches.Select(match => ToDto(match, showRoundNumber)).ToList();
     }
 
     public async Task<IReadOnlyList<TournamentManager.Domain.Entities.Match>> ListFinishedGoalEventsByTeamAsync(Guid teamId, CancellationToken cancellationToken = default)
@@ -86,10 +93,13 @@ public sealed class MatchScheduleService(IAgeGroupRepository ageGroupRepository,
         await matchRepository.SaveChangesAsync(cancellationToken);
     }
 
+    private static bool ShouldShowRoundNumber(CompetitionFormat? competitionFormat, int teamCount) =>
+        !((competitionFormat is CompetitionFormat.RoundRobin or CompetitionFormat.FixedMatches) && teamCount % 2 == 1);
+    
     private static string ScheduleSortLabel(MatchDto match) => match.GroupName ?? RoundLabel(match);
 
     private static string RoundLabel(MatchDto match) => match.Phase is CompetitionPhase.League or CompetitionPhase.GroupStage
-        ? $"Jornada {match.RoundNumber}"
+        ? (match.ShowRoundNumber ? $"Jornada {match.RoundNumber}" : PhaseLabel(match.Phase))
         : PhaseLabel(match.Phase);
 
     private static string PhaseLabel(CompetitionPhase phase) => phase switch
@@ -103,8 +113,8 @@ public sealed class MatchScheduleService(IAgeGroupRepository ageGroupRepository,
         CompetitionPhase.Final => "Final",
         _ => phase.ToString()
     };
-    
-    private static MatchDto ToDto(Match match)
+
+    private static MatchDto ToDto(Match match, bool showRoundNumber)
     {
         var now = DateTimeOffset.UtcNow;
         var periodNumber = match.GetCurrentPeriodNumber(now);
@@ -116,6 +126,6 @@ public sealed class MatchScheduleService(IAgeGroupRepository ageGroupRepository,
             .Select(x => new MatchGoalDto(x.Team?.Name ?? string.Empty, x.Player?.DisplayName ?? string.Empty, x.MatchMinute, x.MatchPeriodNumber, match.FormatMatchMinute(x.MatchMinute, x.MatchPeriodNumber), x.IsOwnGoal, x.IsActive))
             .ToList();
 
-        return new MatchDto(match.Id, match.AgeGroupId, match.HomeTeamId, match.HomeTeam?.Name ?? "A definir", match.AwayTeamId, match.AwayTeam?.Name ?? "A definir", match.RoundNumber, match.ScheduledStartUtc, match.Venue?.Name, match.GroupId, match.Group?.Name, match.PlannedDurationMinutes, match.Status, match.HomeScore, match.AwayScore, match.HomePenaltyScore, match.AwayPenaltyScore, match.Phase, currentMinute, currentMinute.HasValue ? match.FormatMatchMinute(currentMinute.Value, periodNumber) : null, periodNumber, match.PlannedPeriodCount, goals);
+        return new MatchDto(match.Id, match.AgeGroupId, match.HomeTeamId, match.HomeTeam?.Name ?? "A definir", match.AwayTeamId, match.AwayTeam?.Name ?? "A definir", match.RoundNumber, match.ScheduledStartUtc, match.Venue?.Name, match.GroupId, match.Group?.Name, match.PlannedDurationMinutes, match.Status, match.HomeScore, match.AwayScore, match.HomePenaltyScore, match.AwayPenaltyScore, match.Phase, currentMinute, currentMinute.HasValue ? match.FormatMatchMinute(currentMinute.Value, periodNumber) : null, periodNumber, match.PlannedPeriodCount, goals, showRoundNumber);
     }
 }

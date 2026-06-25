@@ -12,7 +12,7 @@
     <div><label asp-for="Name" class="form-label">Nome</label><input asp-for="Name" class="form-control" /></div>
     <div class="row g-2"><div class="col-6"><label asp-for="BirthYearFrom" class="form-label">Ano inicial</label><input asp-for="BirthYearFrom" class="form-control" /></div><div class="col-6"><label asp-for="BirthYearTo" class="form-label">Ano final</label><input asp-for="BirthYearTo" class="form-control" /></div></div>
     <div><label asp-for="MatchDurationMinutes" class="form-label">Duração do jogo</label><input asp-for="MatchDurationMinutes" class="form-control" /></div>
-    <div class="row g-2"><div class="col-6"><label asp-for="NumberOfPeriods" class="form-label">Partes</label><select asp-for="NumberOfPeriods" class="form-select"><option value="1">1 parte</option><option value="2">2 partes</option></select></div><div class="col-6"><label asp-for="HalfTimeBreakMinutes" class="form-label">Intervalo</label><input asp-for="HalfTimeBreakMinutes" class="form-control" /></div></div>
+    <div class="row g-2"><div class="col-6"><label asp-for="NumberOfPeriods" class="form-label">Partes</label><select asp-for="NumberOfPeriods" class="form-select" id="numberOfPeriods"><option value="1">1 parte</option><option value="2">2 partes</option></select></div><div class="col-6" id="halfTimeBreakField"><label asp-for="HalfTimeBreakMinutes" class="form-label">Intervalo</label><input asp-for="HalfTimeBreakMinutes" class="form-control" id="halfTimeBreakMinutes" /></div></div>
     <div><label asp-for="CompetitionFormat" class="form-label">Formato</label><select asp-for="CompetitionFormat" asp-items="Html.GetEnumSelectList<CompetitionFormat>()" class="form-select" id="competitionFormat"></select></div>
     <div class="card border-primary">
         <div class="card-body vstack gap-3">
@@ -48,11 +48,11 @@
     const tournamentStartsAt = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(tournamentStartsAt));
     const phaseLabels = {0:'Liga',1:'Fase de grupos',2:'Oitavos',3:'Quartos',4:'Meia-final',5:'3.º/4.º lugar',6:'Final'};
     function gamesForPhase(p){ return p==2?8:p==3?4:p==4?2:p==6?1:0; }
-    function appendRow(container, i, round, phase, group){
+    function appendRow(container, i, round, phase, group, showRound = true){
       const venueOptions = venues.map(v => `<option value="${v.Id}">${v.Name}</option>`).join('');
       const isRoundBasedPhase = phase === 0 || phase === 1;
       const effectiveRound = isRoundBasedPhase ? round : 1;
-      const roundField = isRoundBasedPhase
+      const roundField = isRoundBasedPhase && showRound
         ? `<div class="col-md-2"><label class="form-label">Jornada/ronda</label><input name="PlannedMatches[${i}].RoundNumber" value="${effectiveRound}" class="form-control" readonly /></div>`
         : `<input type="hidden" name="PlannedMatches[${i}].RoundNumber" value="${effectiveRound}" />`;
       const groupField = phase === 1 && group
@@ -68,14 +68,24 @@
         element.querySelectorAll('input, select').forEach(input => input.disabled = !applies);
       });
     }
+    function roundForMatch(matchNumber, teams, matchesPerTeam){
+      if(teams % 2 === 1) return 1;
+      return Math.floor((matchNumber - 1) / Math.max(1, teams / 2)) + 1;
+    }
+    function toggleHalfTimeBreak(){
+      const onePeriod = parseInt(document.getElementById('numberOfPeriods').value || 1) === 1;
+      document.getElementById('halfTimeBreakField').classList.toggle('d-none', onePeriod);
+      if(onePeriod) document.getElementById('halfTimeBreakMinutes').value = 0;
+    }
     function rebuild(){
+        toggleHalfTimeBreak();
      const c=document.getElementById('plannedMatches'); c.innerHTML=''; let i=0;
      const format=parseInt(document.getElementById('competitionFormat').value||0), teams=parseInt(document.getElementById('teamCount').value||0), groups=Math.max(1,parseInt(document.getElementById('groupCount').value||1)), fixed=parseInt(document.getElementById('fixedMatchCount').value||0), start=parseInt(document.getElementById('finalsStartPhase').value||4);
      toggleFormatOptions(format);
      const fixedMatchesTotal = Math.floor(teams * fixed / 2);
      document.getElementById('fixedMatchesTotal').textContent = fixedMatchesTotal;
      if(format===1){
-       for(let m=1;m<=fixedMatchesTotal;m++) appendRow(c, i++, m, 0);
+       for(let m=1;m<=fixedMatchesTotal;m++) appendRow(c, i++, roundForMatch(m, teams, fixed), 0, null, teams % 2 === 0);
      } else if(format===2){
        const teamsPerGroup = Math.floor(teams/groups), groupRounds = teamsPerGroup*(teamsPerGroup-1)/2;
        for(let round=1;round<=groupRounds;round++) for(let group=1;group<=groups;group++) appendRow(c, i++, round, 1, group);
@@ -83,8 +93,8 @@
        if(start<=4) appendRow(c, i++, 1, 5);
      } else {
        const count = teams*(teams-1)/2;
-       for(let m=1;m<=count;m++) appendRow(c, i++, m, 0);
+       for(let m=1;m<=count;m++) appendRow(c, i++, roundForMatch(m, teams, teams - 1), 0, null, teams % 2 === 0);
      }
     }
-    document.getElementById('rebuildMatches').addEventListener('click', rebuild); ['competitionFormat','teamCount','fixedMatchCount','groupCount','finalsStartPhase'].forEach(id=>document.getElementById(id).addEventListener('change', rebuild)); rebuild();
+    document.getElementById('rebuildMatches').addEventListener('click', rebuild); ['competitionFormat','teamCount','fixedMatchCount','groupCount','finalsStartPhase','numberOfPeriods'].forEach(id=>document.getElementById(id).addEventListener('change', rebuild)); rebuild();
 </script>

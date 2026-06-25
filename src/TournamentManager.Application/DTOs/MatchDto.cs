@@ -27,4 +27,5 @@ public sealed record MatchDto(
     string? CurrentMatchMinuteDisplay = null,
     int CurrentPeriodNumber = 1,
     int PlannedPeriodCount = 1,
-    IReadOnlyList<MatchGoalDto>? Goals = null);
+    IReadOnlyList<MatchGoalDto>? Goals = null,
+    bool ShowRoundNumber = true);
