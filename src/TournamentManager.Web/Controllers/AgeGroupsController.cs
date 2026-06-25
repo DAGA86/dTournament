@@ -46,5 +46,6 @@ public sealed class AgeGroupsController(AgeGroupService ageGroupService, VenueSe
     private async Task PopulateCreateListsAsync(Guid tournamentId, CancellationToken cancellationToken)
     {
         ViewBag.TournamentStartsOn = (await tournamentService.GetAsync(tournamentId, cancellationToken))?.StartsOn;
+        ViewBag.Venues = await venueService.ListAsync(cancellationToken);
     }
 }
