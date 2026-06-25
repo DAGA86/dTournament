@@ -95,7 +95,14 @@ public sealed class Match : BaseEntity
         var periodStartMinute = (normalizedPeriod - 1) * PlannedPeriodDurationMinutes;
         var targetElapsedSeconds = Math.Min(periodStartMinute, PlannedDurationMinutes) * 60L;
         var totalClockSeconds = Math.Max(0, (long)(nowUtc - ActualStartUtc.Value).TotalSeconds);
-        TotalPausedSeconds = Math.Max(0, totalClockSeconds - targetElapsedSeconds);
+        if (totalClockSeconds < targetElapsedSeconds)
+        {
+            ActualStartUtc = nowUtc.AddSeconds(-targetElapsedSeconds);
+            TotalPausedSeconds = 0;
+            return;
+        }
+
+        TotalPausedSeconds = totalClockSeconds - targetElapsedSeconds;
     }
     
     public int NormalizeMatchMinute(int elapsedMinute, int periodNumber = 1)

@@ -62,6 +62,17 @@ public sealed class MatchPeriodSettingsTests
     }
 
     [Fact]
+    public void Match_NormalizeElapsedPlayingTimeToCurrentPeriodStart_Starts_Next_Period_At_Planned_Minute_When_First_Period_Is_Short()
+    {
+        var start = DateTimeOffset.UtcNow;
+        var match = new Match { ActualStartUtc = start, PlannedDurationMinutes = 30, PlannedPeriodCount = 2, CurrentPeriodNumber = 2 };
+
+        match.NormalizeElapsedPlayingTimeToCurrentPeriodStart(start.AddMinutes(10));
+
+        Assert.Equal(TimeSpan.FromMinutes(15), match.GetElapsedPlayingTime(start.AddMinutes(10)));
+    }
+
+    [Fact]
     public void Match_GetCurrentPeriodNumber_Uses_Persisted_Period_Not_Elapsed_Playing_Time()
     {
         var start = DateTimeOffset.UtcNow.AddMinutes(-16);
