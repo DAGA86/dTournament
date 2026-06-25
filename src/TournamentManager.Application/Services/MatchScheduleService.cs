@@ -10,7 +10,12 @@ public sealed class MatchScheduleService(IAgeGroupRepository ageGroupRepository,
     public async Task<IReadOnlyList<MatchDto>> ListByAgeGroupAsync(Guid ageGroupId, CancellationToken cancellationToken = default)
     {
         var matches = await matchRepository.ListByAgeGroupAsync(ageGroupId, cancellationToken);
-        return matches.Select(ToDto).ToList();
+        return matches
+            .Select(ToDto)
+            .OrderBy(x => !x.ScheduledStartUtc.HasValue)
+            .ThenBy(x => x.ScheduledStartUtc)
+            .ThenBy(ScheduleSortLabel, StringComparer.CurrentCulture)
+            .ToList();
     }
 
     public async Task<IReadOnlyList<MatchDto>> ListByTeamAsync(Guid teamId, CancellationToken cancellationToken = default)
@@ -81,6 +86,24 @@ public sealed class MatchScheduleService(IAgeGroupRepository ageGroupRepository,
         await matchRepository.SaveChangesAsync(cancellationToken);
     }
 
+    private static string ScheduleSortLabel(MatchDto match) => match.GroupName ?? RoundLabel(match);
+
+    private static string RoundLabel(MatchDto match) => match.Phase is CompetitionPhase.League or CompetitionPhase.GroupStage
+        ? $"Jornada {match.RoundNumber}"
+        : $"{PhaseLabel(match.Phase)} {match.RoundNumber}";
+
+    private static string PhaseLabel(CompetitionPhase phase) => phase switch
+    {
+        CompetitionPhase.League => "Liga",
+        CompetitionPhase.GroupStage => "Fase de grupos",
+        CompetitionPhase.RoundOf16 => "Oitavos de final",
+        CompetitionPhase.QuarterFinal => "Quartos de final",
+        CompetitionPhase.SemiFinal => "Meia-final",
+        CompetitionPhase.ThirdPlace => "3.º/4.º lugar",
+        CompetitionPhase.Final => "Final",
+        _ => phase.ToString()
+    };
+    
     private static MatchDto ToDto(Match match)
     {
         var now = DateTimeOffset.UtcNow;
