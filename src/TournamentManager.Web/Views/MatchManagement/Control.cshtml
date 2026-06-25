@@ -8,6 +8,8 @@
     var canFinish = Model.Status == TournamentManager.Domain.Enums.MatchStatus.InProgress
         && Model.CurrentPeriodNumber >= Model.PlannedPeriodCount;
 }
+
+<a class="btn btn-link px-0" asp-controller="Schedules" asp-action="Index" asp-route-ageGroupId="@Model.AgeGroupId">← Voltar à gestão de calendário</a>
 <div class="card shadow-sm mb-3">
     <div class="card-body text-center">
         <h1 class="h4">@Model.HomeTeamName vs @Model.AwayTeamName</h1><div class="display-4 fw-bold">@Model.HomeScore - @Model.AwayScore</div><div class="display-6">

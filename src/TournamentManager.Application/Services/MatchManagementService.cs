@@ -24,8 +24,8 @@ public sealed class MatchManagementService(IMatchRepository matchRepository, IPl
             match.PausedAtUtc = null;
             if (match.PlannedPeriodCount > 1 && match.CurrentPeriodNumber < match.PlannedPeriodCount)
             {
-                match.NormalizeElapsedPlayingTimeToCurrentPeriodStart(now);
                 match.CurrentPeriodNumber++;
+                match.NormalizeElapsedPlayingTimeToCurrentPeriodStart(now);
             }
         }
         match.Status = MatchStatus.InProgress;
@@ -150,6 +150,6 @@ public sealed class MatchManagementService(IMatchRepository matchRepository, IPl
         var goals = match.GoalEvents.OrderBy(x => x.MatchPeriodNumber).ThenBy(x => x.MatchMinute).ThenBy(x => x.RecordedAtUtc).Select(x => new GoalEventDto(x.Id, x.MatchId, x.Team?.Name ?? string.Empty, x.Player?.DisplayName ?? string.Empty, x.MatchMinute, x.MatchPeriodNumber, match.FormatMatchMinute(x.MatchMinute, x.MatchPeriodNumber), x.IsOwnGoal, x.IsActive, x.RecordedAtUtc)).ToList();
         var homePlayers = match.HomeTeam?.Players.Where(x => x.IsActive).OrderBy(x => x.ShirtNumber).ThenBy(x => x.DisplayName).Select(x => new PlayerSelectionDto(x.Id, x.TeamId, x.DisplayName, x.ShirtNumber)).ToList() ?? new List<PlayerSelectionDto>();
         var awayPlayers = match.AwayTeam?.Players.Where(x => x.IsActive).OrderBy(x => x.ShirtNumber).ThenBy(x => x.DisplayName).Select(x => new PlayerSelectionDto(x.Id, x.TeamId, x.DisplayName, x.ShirtNumber)).ToList() ?? new List<PlayerSelectionDto>();
-        return new MatchControlDto(match.Id, match.HomeTeamId, match.AwayTeamId, match.HomeTeam?.Name ?? string.Empty, match.AwayTeam?.Name ?? string.Empty, match.HomeScore ?? 0, match.AwayScore ?? 0, match.Status, match.ActualStartUtc, match.ActualEndUtc, (long)match.GetElapsedPlayingTime(DateTimeOffset.UtcNow).TotalSeconds, match.GetCurrentPeriodNumber(DateTimeOffset.UtcNow), match.PlannedDurationMinutes, match.PlannedPeriodCount, match.PlannedPeriodDurationMinutes, goals, homePlayers, awayPlayers, match.PlayerOfTheMatchVotes.FirstOrDefault(x => x.IsGoalkeeperVote)?.PlayerId);
+        return new MatchControlDto(match.Id, match.AgeGroupId, match.HomeTeamId, match.AwayTeamId, match.HomeTeam?.Name ?? string.Empty, match.AwayTeam?.Name ?? string.Empty, match.HomeScore ?? 0, match.AwayScore ?? 0, match.Status, match.ActualStartUtc, match.ActualEndUtc, (long)match.GetElapsedPlayingTime(DateTimeOffset.UtcNow).TotalSeconds, match.GetCurrentPeriodNumber(DateTimeOffset.UtcNow), match.PlannedDurationMinutes, match.PlannedPeriodCount, match.PlannedPeriodDurationMinutes, goals, homePlayers, awayPlayers, match.PlayerOfTheMatchVotes.FirstOrDefault(x => x.IsGoalkeeperVote)?.PlayerId);
     }
 }

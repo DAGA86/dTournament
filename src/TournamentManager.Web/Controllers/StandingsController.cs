@@ -12,6 +12,7 @@ public sealed class StandingsController(StandingsCalculationService standingsCal
     {
         ViewBag.AgeGroupId = ageGroupId;
         var ageGroup = await ageGroupService.GetEntityAsync(ageGroupId, cancellationToken);
+        ViewBag.AgeGroup = ageGroup;
         if (ageGroup?.CompetitionFormat == CompetitionFormat.GroupStageAndFinals)
         {
             ViewBag.GroupStandings = await standingsCalculationService.CalculateByGroupAsync(ageGroupId, cancellationToken);

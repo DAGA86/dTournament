@@ -54,7 +54,7 @@ public sealed class MatchPeriodSettingsTests
     public void Match_NormalizeElapsedPlayingTimeToCurrentPeriodStart_Starts_Next_Period_At_Planned_Minute()
     {
         var start = DateTimeOffset.UtcNow;
-        var match = new Match { ActualStartUtc = start, PlannedDurationMinutes = 30, PlannedPeriodCount = 2, CurrentPeriodNumber = 1 };
+        var match = new Match { ActualStartUtc = start, PlannedDurationMinutes = 30, PlannedPeriodCount = 2, CurrentPeriodNumber = 2 };
 
         match.NormalizeElapsedPlayingTimeToCurrentPeriodStart(start.AddMinutes(16).AddSeconds(20));
 

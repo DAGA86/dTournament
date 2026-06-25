@@ -1,11 +1,16 @@
 ﻿@model IReadOnlyList<StandingDto>
 @{
+    var ageGroup = ViewBag.AgeGroup as TournamentManager.Domain.Entities.AgeGroup;
     ViewData["Title"] = "Classificação";
     var publicView = ViewBag.PublicView as bool? == true;
     Guid? ageGroupId = ViewBag.AgeGroupId is Guid value ? value : null;
     var groupStandings = ViewBag.GroupStandings as IReadOnlyDictionary<string, IReadOnlyList<StandingDto>>;
     var finalsStandings = ViewBag.FinalsStandings as IReadOnlyList<StandingDto> ?? Array.Empty<StandingDto>();
     if (publicView) ViewData["HideMainMenu"] = true;
+}
+@if (ageGroup is not null)
+{
+    <a class="btn btn-link px-0" asp-controller="AgeGroups" asp-action="Index" asp-route-tournamentId="@ageGroup.TournamentId">← Voltar à gestão do escalão</a>
 }
 @if (publicView && ageGroupId.HasValue)
 {

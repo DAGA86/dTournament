@@ -10,13 +10,13 @@ public sealed class MatchScheduleService(IAgeGroupRepository ageGroupRepository,
     public async Task<IReadOnlyList<MatchDto>> ListByAgeGroupAsync(Guid ageGroupId, CancellationToken cancellationToken = default)
     {
         var matches = await matchRepository.ListByAgeGroupAsync(ageGroupId, cancellationToken);
-        return matches.Select(x => new MatchDto(x.Id, x.AgeGroupId, x.HomeTeamId, x.HomeTeam?.Name ?? string.Empty, x.AwayTeamId, x.AwayTeam?.Name ?? string.Empty, x.RoundNumber, x.ScheduledStartUtc, x.Venue?.Name, x.PlannedDurationMinutes, x.Status, x.HomeScore, x.AwayScore, x.Phase)).ToList();
+        return matches.Select(ToDto).ToList();
     }
 
     public async Task<IReadOnlyList<MatchDto>> ListByTeamAsync(Guid teamId, CancellationToken cancellationToken = default)
     {
         var matches = await matchRepository.ListByTeamAsync(teamId, cancellationToken);
-        return matches.Select(x => new MatchDto(x.Id, x.AgeGroupId, x.HomeTeamId, x.HomeTeam?.Name ?? string.Empty, x.AwayTeamId, x.AwayTeam?.Name ?? string.Empty, x.RoundNumber, x.ScheduledStartUtc, x.Venue?.Name, x.PlannedDurationMinutes, x.Status, x.HomeScore, x.AwayScore, x.Phase)).ToList();
+        return matches.Select(ToDto).ToList();
     }
 
     public async Task<IReadOnlyList<TournamentManager.Domain.Entities.Match>> ListFinishedGoalEventsByTeamAsync(Guid teamId, CancellationToken cancellationToken = default)
@@ -63,4 +63,18 @@ public sealed class MatchScheduleService(IAgeGroupRepository ageGroupRepository,
         return match.Id;
     }
 
+    private static MatchDto ToDto(Match match)
+    {
+        var now = DateTimeOffset.UtcNow;
+        var periodNumber = match.GetCurrentPeriodNumber(now);
+        var currentMinute = match.Status is MatchStatus.InProgress or MatchStatus.Paused ? match.GetCurrentMatchMinute(now, periodNumber) : (int?)null;
+        var goals = match.GoalEvents
+            .OrderBy(x => x.MatchPeriodNumber)
+            .ThenBy(x => x.MatchMinute)
+            .ThenBy(x => x.RecordedAtUtc)
+            .Select(x => new MatchGoalDto(x.Team?.Name ?? string.Empty, x.Player?.DisplayName ?? string.Empty, x.MatchMinute, x.MatchPeriodNumber, match.FormatMatchMinute(x.MatchMinute, x.MatchPeriodNumber), x.IsOwnGoal, x.IsActive))
+            .ToList();
+
+        return new MatchDto(match.Id, match.AgeGroupId, match.HomeTeamId, match.HomeTeam?.Name ?? string.Empty, match.AwayTeamId, match.AwayTeam?.Name ?? string.Empty, match.RoundNumber, match.ScheduledStartUtc, match.Venue?.Name, match.PlannedDurationMinutes, match.Status, match.HomeScore, match.AwayScore, match.Phase, currentMinute, currentMinute.HasValue ? match.FormatMatchMinute(currentMinute.Value, periodNumber) : null, goals);
+    }
 }

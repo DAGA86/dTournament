@@ -11,6 +11,7 @@ public sealed class TeamsController(TeamService teamService, AgeGroupService age
     public async Task<IActionResult> Index(Guid ageGroupId, CancellationToken cancellationToken)
     {
         ViewBag.AgeGroupId = ageGroupId;
+        ViewBag.AgeGroup = await ageGroupService.GetEntityAsync(ageGroupId, cancellationToken);
         return View(await teamService.ListByAgeGroupAsync(ageGroupId, cancellationToken));
     }
 

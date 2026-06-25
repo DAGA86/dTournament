@@ -35,6 +35,7 @@ public sealed class HomeController(
         if (!await IsPublicAgeGroupAsync(ageGroupId, cancellationToken)) return NotFound();
         ViewBag.AgeGroupId = ageGroupId;
         ViewBag.PublicView = true;
+        ViewBag.LiveOnly = true;
         var matches = await matchScheduleService.ListByAgeGroupAsync(ageGroupId, cancellationToken);
         return View("~/Views/Schedules/Index.cshtml", matches.Where(x => x.Status is MatchStatus.InProgress or MatchStatus.Paused).ToList());
     }

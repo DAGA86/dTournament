@@ -92,7 +92,8 @@ public sealed class Match : BaseEntity
         if (!ActualStartUtc.HasValue || PlannedPeriodCount <= 1) return;
 
         var normalizedPeriod = Math.Clamp(CurrentPeriodNumber, 1, PlannedPeriodCount);
-        var targetElapsedSeconds = Math.Min(normalizedPeriod * PlannedPeriodDurationMinutes, PlannedDurationMinutes) * 60L;
+        var periodStartMinute = (normalizedPeriod - 1) * PlannedPeriodDurationMinutes;
+        var targetElapsedSeconds = Math.Min(periodStartMinute, PlannedDurationMinutes) * 60L;
         var totalClockSeconds = Math.Max(0, (long)(nowUtc - ActualStartUtc.Value).TotalSeconds);
         TotalPausedSeconds = Math.Max(0, totalClockSeconds - targetElapsedSeconds);
     }

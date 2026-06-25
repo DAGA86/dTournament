@@ -2,6 +2,8 @@
 
 namespace TournamentManager.Application.DTOs;
 
+public sealed record MatchGoalDto(string TeamName, string PlayerName, int MatchMinute, int MatchPeriodNumber, string MatchMinuteDisplay, bool IsOwnGoal, bool IsActive);
+
 public sealed record MatchDto(
     Guid Id,
     Guid AgeGroupId,
@@ -16,4 +18,7 @@ public sealed record MatchDto(
     MatchStatus Status,
     int? HomeScore,
     int? AwayScore,
-    CompetitionPhase Phase = CompetitionPhase.League);
+    CompetitionPhase Phase = CompetitionPhase.League,
+    int? CurrentMatchMinute = null,
+    string? CurrentMatchMinuteDisplay = null,
+    IReadOnlyList<MatchGoalDto>? Goals = null);

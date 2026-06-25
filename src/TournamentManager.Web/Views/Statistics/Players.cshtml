@@ -1,6 +1,11 @@
 ﻿@model IReadOnlyList<PlayerStatisticDto>
 @{
+    var ageGroup = ViewBag.AgeGroup as TournamentManager.Domain.Entities.AgeGroup;
     ViewData["Title"] = "Estatísticas de jogadores";
+}
+@if (ageGroup is not null)
+{
+    <a class="btn btn-link px-0" asp-controller="AgeGroups" asp-action="Index" asp-route-tournamentId="@ageGroup.TournamentId">← Voltar à gestão do escalão</a>
 }
 <h1 class="h3 mb-3">Jogadores</h1>
 <div class="table-responsive shadow-sm">
