@@ -93,6 +93,6 @@ public sealed class MatchScheduleService(IAgeGroupRepository ageGroupRepository,
             .Select(x => new MatchGoalDto(x.Team?.Name ?? string.Empty, x.Player?.DisplayName ?? string.Empty, x.MatchMinute, x.MatchPeriodNumber, match.FormatMatchMinute(x.MatchMinute, x.MatchPeriodNumber), x.IsOwnGoal, x.IsActive))
             .ToList();
 
-        return new MatchDto(match.Id, match.AgeGroupId, match.HomeTeamId, match.HomeTeam?.Name ?? "A definir", match.AwayTeamId, match.AwayTeam?.Name ?? "A definir", match.RoundNumber, match.ScheduledStartUtc, match.Venue?.Name, match.PlannedDurationMinutes, match.Status, match.HomeScore, match.AwayScore, match.Phase, currentMinute, currentMinute.HasValue ? match.FormatMatchMinute(currentMinute.Value, periodNumber) : null, periodNumber, match.PlannedPeriodCount, goals);
+        return new MatchDto(match.Id, match.AgeGroupId, match.HomeTeamId, match.HomeTeam?.Name ?? "A definir", match.AwayTeamId, match.AwayTeam?.Name ?? "A definir", match.RoundNumber, match.ScheduledStartUtc, match.Venue?.Name, match.GroupId, match.Group?.Name, match.PlannedDurationMinutes, match.Status, match.HomeScore, match.AwayScore, match.HomePenaltyScore, match.AwayPenaltyScore, match.Phase, currentMinute, currentMinute.HasValue ? match.FormatMatchMinute(currentMinute.Value, periodNumber) : null, periodNumber, match.PlannedPeriodCount, goals);
     }
 }

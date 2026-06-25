@@ -92,7 +92,13 @@
                     <span>@match.AwayTeamName</span>
                 }
             </div>
-            <div class="text-muted small">@(match.ScheduledStartUtc?.ToString("dd/MM/yyyy HH:mm") ?? "Sem data") · @(match.VenueName ?? "Sem campo") · @match.PlannedDurationMinutes min</div>
+            <div class="text-muted small">
+                @(match.ScheduledStartUtc?.ToString("dd/MM/yyyy HH:mm") ?? "Sem data") · @(match.VenueName ?? "Sem campo") · @(match.GroupName ?? "Sem grupo") · @match.PlannedDurationMinutes min
+                @if (match.HomePenaltyScore.HasValue || match.AwayPenaltyScore.HasValue)
+                {
+                    <span> · Penáltis @(match.HomePenaltyScore?.ToString() ?? "-") - @(match.AwayPenaltyScore?.ToString() ?? "-")</span>
+                }
+            </div>
             @if (isLive && !string.IsNullOrWhiteSpace(match.CurrentMatchMinuteDisplay))
             {
                 <div class="mt-2">
