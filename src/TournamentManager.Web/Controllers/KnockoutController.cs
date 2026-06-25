@@ -14,16 +14,16 @@ public sealed class KnockoutController(QualificationService qualificationService
     }
 
     [HttpPost, Authorize(Policy = "AdministratorOnly"), ValidateAntiForgeryToken]
-    public async Task<IActionResult> CreateSemiFinals(Guid ageGroupId, CancellationToken cancellationToken)
+    public async Task<IActionResult> CreateNextPhase(Guid ageGroupId, CancellationToken cancellationToken)
     {
-        await qualificationService.CreateSemiFinalsAsync(ageGroupId, cancellationToken);
+        await qualificationService.CreateNextPhaseAsync(ageGroupId, cancellationToken);
         return RedirectToAction(nameof(Index), new { ageGroupId });
     }
 
     [HttpPost, Authorize(Policy = "AdministratorOnly"), ValidateAntiForgeryToken]
     public async Task<IActionResult> ProgressFinals(Guid ageGroupId, CancellationToken cancellationToken)
     {
-        await knockoutProgressionService.ProgressAfterSemiFinalsAsync(ageGroupId, cancellationToken);
+        await knockoutProgressionService.ProgressNextRoundAsync(ageGroupId, cancellationToken);
         return RedirectToAction(nameof(Index), new { ageGroupId });
     }
 }

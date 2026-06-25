@@ -64,5 +64,7 @@ public sealed class StandingsCalculationServiceTests
         public Task AddVoteAsync(PlayerOfTheMatchVote vote, CancellationToken cancellationToken = default) => Task.CompletedTask;
         public Task SaveChangesAsync(CancellationToken cancellationToken = default) => Task.CompletedTask;
         public Task<PlayerOfTheMatchVote?> GetGoalkeeperVoteAsync(Guid matchId, CancellationToken cancellationToken = default) => Task.FromResult<PlayerOfTheMatchVote?>(null);
+        public Task<IReadOnlyList<Match>> ListByTeamAsync(Guid teamId, CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyList<Match>>(matches);
+        public Task<IReadOnlyList<Match>> ListByTeamWithGoalEventsAsync(Guid teamId, CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyList<Match>>(matches);
     }
 }

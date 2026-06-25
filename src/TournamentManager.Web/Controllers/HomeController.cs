@@ -12,7 +12,8 @@ public sealed class HomeController(
     TeamService teamService,
     PlayerService playerService,
     MatchScheduleService matchScheduleService,
-    StandingsCalculationService standingsCalculationService) : Controller
+    StandingsCalculationService standingsCalculationService,
+    KnockoutProgressionService knockoutProgressionService) : Controller
 {
     private static readonly Guid PublicTournamentId = Guid.Parse("e2ca8f96-1c45-4e28-9dee-286cbfba390c");
 
@@ -43,6 +44,7 @@ public sealed class HomeController(
         if (!await IsPublicAgeGroupAsync(ageGroupId, cancellationToken)) return NotFound();
         ViewBag.AgeGroupId = ageGroupId;
         ViewBag.PublicView = true;
+        ViewBag.AgeGroup = await ageGroupService.GetEntityAsync(ageGroupId, cancellationToken);
         return View("~/Views/Schedules/Index.cshtml", await matchScheduleService.ListByAgeGroupAsync(ageGroupId, cancellationToken));
     }
 
@@ -51,6 +53,13 @@ public sealed class HomeController(
         if (!await IsPublicAgeGroupAsync(ageGroupId, cancellationToken)) return NotFound();
         ViewBag.AgeGroupId = ageGroupId;
         ViewBag.PublicView = true;
+        var ageGroup = await ageGroupService.GetEntityAsync(ageGroupId, cancellationToken);
+        if (ageGroup?.CompetitionFormat == CompetitionFormat.GroupStageAndFinals)
+        {
+            ViewBag.GroupStandings = await standingsCalculationService.CalculateByGroupAsync(ageGroupId, cancellationToken);
+            ViewBag.FinalsStandings = await knockoutProgressionService.CalculateFinalTopFourAsync(ageGroupId, cancellationToken);
+            return View("~/Views/Standings/Index.cshtml", Array.Empty<TournamentManager.Application.DTOs.StandingDto>());
+        }
         return View("~/Views/Standings/Index.cshtml", await standingsCalculationService.CalculateAsync(ageGroupId, cancellationToken));
     }
 

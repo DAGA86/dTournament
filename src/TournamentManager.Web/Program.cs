@@ -22,7 +22,6 @@ builder.Services.AddScoped<TeamService>();
 builder.Services.AddScoped<PlayerService>();
 builder.Services.AddScoped<TeamRosterSubmissionService>();
 builder.Services.AddScoped<VenueService>();
-builder.Services.AddScoped<ScheduleGenerationService>();
 builder.Services.AddScoped<MatchScheduleService>();
 builder.Services.AddScoped<MatchManagementService>();
 builder.Services.AddScoped<StandingsCalculationService>();

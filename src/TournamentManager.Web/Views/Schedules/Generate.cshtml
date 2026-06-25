@@ -1,6 +1,0 @@
-﻿@model ScheduleGenerateViewModel
-@{
-    ViewData["Title"] = "Gerar calendário";
-}
-<h1 class="h3">Gerar calendário</h1>
-<form asp-action="Generate" method="post" class="vstack gap-3"><div asp-validation-summary="ModelOnly" class="text-danger"></div><input asp-for="AgeGroupId" type="hidden" /><div><label asp-for="FirstKickoffUtc" class="form-label">Primeiro jogo</label><input asp-for="FirstKickoffUtc" class="form-control" /></div><div><label asp-for="MinutesBetweenMatches" class="form-label">Minutos entre jogos</label><input asp-for="MinutesBetweenMatches" class="form-control" /></div><div><label asp-for="VenueId" class="form-label">Campo opcional</label><input asp-for="VenueId" class="form-control" /></div><button class="btn btn-primary btn-lg">Gerar</button></form>

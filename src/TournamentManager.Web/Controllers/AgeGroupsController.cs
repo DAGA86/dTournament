@@ -23,7 +23,7 @@ public sealed class AgeGroupsController(AgeGroupService ageGroupService) : Contr
         if (!ModelState.IsValid) return View(model);
         try
         {
-            await ageGroupService.CreateAsync(model.TournamentId, model.Name, model.BirthYearFrom, model.BirthYearTo, model.MatchDurationMinutes, model.CompetitionFormat, cancellationToken);
+            await ageGroupService.CreateAsync(model.TournamentId, model.Name, model.BirthYearFrom, model.BirthYearTo, model.MatchDurationMinutes, model.NumberOfPeriods, model.HalfTimeBreakMinutes, model.CompetitionFormat, model.GroupCount, model.AdvancingTeamsPerGroup, model.FinalsStartPhase, cancellationToken);
             return RedirectToAction(nameof(Index), new { tournamentId = model.TournamentId });
         }
         catch (InvalidOperationException ex)

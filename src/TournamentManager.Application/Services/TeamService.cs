@@ -9,7 +9,7 @@ public sealed class TeamService(ITeamRepository teamRepository, IAgeGroupReposit
     public async Task<IReadOnlyList<TeamDto>> ListByAgeGroupAsync(Guid ageGroupId, CancellationToken cancellationToken = default)
     {
         var teams = await teamRepository.ListByAgeGroupAsync(ageGroupId, cancellationToken);
-        return teams.Select(t => new TeamDto(t.Id, t.AgeGroupId, t.AgeGroup?.Name ?? string.Empty, t.Name, t.ShortName, t.Club, t.ResponsiblePerson, t.Contact, t.IsActive, t.Players.Count)).ToList();
+        return teams.Select(t => new TeamDto(t.Id, t.AgeGroupId, t.AgeGroup?.Name ?? string.Empty, t.Name, t.ShortName, t.Club, t.ResponsiblePerson, t.Contact, t.IsActive, t.Players.Count, t.GroupId, t.Group?.Name)).ToList();
     }
 
     public async Task<TeamDto?> GetAsync(Guid teamId, CancellationToken cancellationToken = default)
@@ -17,12 +17,14 @@ public sealed class TeamService(ITeamRepository teamRepository, IAgeGroupReposit
         var team = await teamRepository.GetAsync(teamId, cancellationToken);
         return team is null ? null : new TeamDto(team.Id, team.AgeGroupId, team.AgeGroup?.Name ?? string.Empty, team.Name, team.ShortName, team.Club, team.ResponsiblePerson, team.Contact, team.IsActive, team.Players.Count);
     }
-    
-    public async Task<Guid> CreateAsync(Guid ageGroupId, string name, string shortName, string club, string responsiblePerson, string? contact, string? primaryColor, CancellationToken cancellationToken = default)
+
+    public async Task<Guid> CreateAsync(Guid ageGroupId, string name, string shortName, string club, string responsiblePerson, string? contact, string? primaryColor, Guid? groupId, CancellationToken cancellationToken = default)
     {
         var ageGroup = await ageGroupRepository.GetAsync(ageGroupId, cancellationToken) ?? throw new InvalidOperationException("Age group was not found.");
         if (await teamRepository.ExistsInAgeGroupAsync(ageGroup.Id, name.Trim(), null, cancellationToken)) throw new InvalidOperationException("A team with the same name already exists in this age group.");
-        var team = new Team { AgeGroupId = ageGroup.Id, Name = name.Trim(), ShortName = shortName.Trim(), Club = club.Trim(), ResponsiblePerson = responsiblePerson.Trim(), Contact = contact, PrimaryColor = primaryColor };
+        if (ageGroup.CompetitionFormat == TournamentManager.Domain.Enums.CompetitionFormat.GroupStageAndFinals && !groupId.HasValue) throw new InvalidOperationException("A group must be selected for this competition format.");
+        if (groupId.HasValue && ageGroup.Groups.All(x => x.Id != groupId.Value)) throw new InvalidOperationException("The selected group does not belong to this age group.");
+        var team = new Team { AgeGroupId = ageGroup.Id, GroupId = groupId, Name = name.Trim(), ShortName = shortName.Trim(), Club = club.Trim(), ResponsiblePerson = responsiblePerson.Trim(), Contact = contact, PrimaryColor = primaryColor };
         team.Validate();
         await teamRepository.AddAsync(team, cancellationToken);
         await teamRepository.SaveChangesAsync(cancellationToken);

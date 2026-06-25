@@ -5,59 +5,18 @@ using TournamentManager.Domain.Enums;
 
 namespace TournamentManager.Application.Services;
 
-public sealed class MatchScheduleService(IAgeGroupRepository ageGroupRepository, ITeamRepository teamRepository, IMatchRepository matchRepository, ScheduleGenerationService scheduleGenerationService)
+public sealed class MatchScheduleService(IAgeGroupRepository ageGroupRepository, ITeamRepository teamRepository, IMatchRepository matchRepository)
 {
     public async Task<IReadOnlyList<MatchDto>> ListByAgeGroupAsync(Guid ageGroupId, CancellationToken cancellationToken = default)
     {
         var matches = await matchRepository.ListByAgeGroupAsync(ageGroupId, cancellationToken);
-        return matches.Select(x => new MatchDto(x.Id, x.AgeGroupId, x.HomeTeamId, x.HomeTeam?.Name ?? string.Empty, x.AwayTeamId, x.AwayTeam?.Name ?? string.Empty, x.RoundNumber, x.ScheduledStartUtc, x.Venue?.Name, x.PlannedDurationMinutes, x.Status, x.HomeScore, x.AwayScore)).ToList();
+        return matches.Select(x => new MatchDto(x.Id, x.AgeGroupId, x.HomeTeamId, x.HomeTeam?.Name ?? string.Empty, x.AwayTeamId, x.AwayTeam?.Name ?? string.Empty, x.RoundNumber, x.ScheduledStartUtc, x.Venue?.Name, x.PlannedDurationMinutes, x.Status, x.HomeScore, x.AwayScore, x.Phase)).ToList();
     }
 
     public async Task<IReadOnlyList<MatchDto>> ListByTeamAsync(Guid teamId, CancellationToken cancellationToken = default)
     {
         var matches = await matchRepository.ListByTeamAsync(teamId, cancellationToken);
-        return matches.Select(x => new MatchDto(x.Id, x.AgeGroupId, x.HomeTeamId, x.HomeTeam?.Name ?? string.Empty, x.AwayTeamId, x.AwayTeam?.Name ?? string.Empty, x.RoundNumber, x.ScheduledStartUtc, x.Venue?.Name, x.PlannedDurationMinutes, x.Status, x.HomeScore, x.AwayScore)).ToList();
-    }
-
-    public async Task<IReadOnlyList<GeneratedMatchDto>> PreviewAsync(Guid ageGroupId, CancellationToken cancellationToken = default)
-    {
-        var ageGroup = await ageGroupRepository.GetAsync(ageGroupId, cancellationToken) ?? throw new InvalidOperationException("Age group was not found.");
-        var teams = (await teamRepository.ListByAgeGroupAsync(ageGroupId, cancellationToken)).Where(x => x.IsActive).ToList();
-        return ageGroup.CompetitionFormat switch
-        {
-            CompetitionFormat.RoundRobin => scheduleGenerationService.GenerateRoundRobin(teams, ageGroup.RoundRobinLegs),
-            CompetitionFormat.FixedMatches => scheduleGenerationService.GenerateFixedMatches(teams, ageGroup.FixedMatchesPerTeam ?? 0),
-            CompetitionFormat.GroupStageAndFinals => scheduleGenerationService.GenerateRoundRobin(teams, 1),
-            _ => throw new InvalidOperationException("Unsupported competition format.")
-        };
-    }
-
-    public async Task GenerateAsync(Guid ageGroupId, DateTimeOffset firstKickoffUtc, int minutesBetweenMatches, Guid? venueId, CancellationToken cancellationToken = default)
-    {
-        if (await matchRepository.HasMatchesForAgeGroupAsync(ageGroupId, cancellationToken)) throw new InvalidOperationException("This age group already has matches. Delete or edit them manually before generating a new schedule.");
-        var ageGroup = await ageGroupRepository.GetAsync(ageGroupId, cancellationToken) ?? throw new InvalidOperationException("Age group was not found.");
-        var generated = await PreviewAsync(ageGroupId, cancellationToken);
-        var matches = generated.Select((x, index) =>
-        {
-            var match = new Match
-            {
-                TournamentId = ageGroup.TournamentId,
-                AgeGroupId = ageGroup.Id,
-                Phase = ageGroup.CompetitionFormat == CompetitionFormat.GroupStageAndFinals ? CompetitionPhase.GroupStage : CompetitionPhase.League,
-                RoundNumber = x.RoundNumber,
-                HomeTeamId = x.HomeTeamId,
-                AwayTeamId = x.AwayTeamId,
-                ScheduledStartUtc = firstKickoffUtc.AddMinutes(index * minutesBetweenMatches),
-                VenueId = venueId,
-                PlannedDurationMinutes = ageGroup.MatchDurationMinutes,
-                PlannedPeriodCount = ageGroup.NumberOfPeriods,
-                HalfTimeBreakMinutes = ageGroup.HalfTimeBreakMinutes
-            };
-            match.Validate();
-            return match;
-        }).ToList();
-        await matchRepository.AddRangeAsync(matches, cancellationToken);
-        await matchRepository.SaveChangesAsync(cancellationToken);
+        return matches.Select(x => new MatchDto(x.Id, x.AgeGroupId, x.HomeTeamId, x.HomeTeam?.Name ?? string.Empty, x.AwayTeamId, x.AwayTeam?.Name ?? string.Empty, x.RoundNumber, x.ScheduledStartUtc, x.Venue?.Name, x.PlannedDurationMinutes, x.Status, x.HomeScore, x.AwayScore, x.Phase)).ToList();
     }
 
     public async Task<IReadOnlyList<TournamentManager.Domain.Entities.Match>> ListFinishedGoalEventsByTeamAsync(Guid teamId, CancellationToken cancellationToken = default)
@@ -79,11 +38,16 @@ public sealed class MatchScheduleService(IAgeGroupRepository ageGroupRepository,
             }
         }
         if (homeTeamId == awayTeamId) throw new InvalidOperationException("A team cannot play against itself.");
+        var teams = await teamRepository.ListByAgeGroupAsync(ageGroupId, cancellationToken);
+        var homeTeam = teams.FirstOrDefault(x => x.Id == homeTeamId) ?? throw new InvalidOperationException("Home team was not found.");
+        var awayTeam = teams.FirstOrDefault(x => x.Id == awayTeamId) ?? throw new InvalidOperationException("Away team was not found.");
+        if (ageGroup.CompetitionFormat == CompetitionFormat.GroupStageAndFinals && homeTeam.GroupId != awayTeam.GroupId) throw new InvalidOperationException("Group stage matches must be between teams from the same group.");
         var match = new Match
         {
             TournamentId = ageGroup.TournamentId,
             AgeGroupId = ageGroup.Id,
             Phase = ageGroup.CompetitionFormat == CompetitionFormat.GroupStageAndFinals ? CompetitionPhase.GroupStage : CompetitionPhase.League,
+            GroupId = ageGroup.CompetitionFormat == CompetitionFormat.GroupStageAndFinals ? homeTeam.GroupId : null,
             RoundNumber = roundNumber,
             HomeTeamId = homeTeamId,
             AwayTeamId = awayTeamId,

@@ -3,13 +3,14 @@
     ViewData["Title"] = "Calendário";
     var ageGroupId = (Guid)ViewBag.AgeGroupId;
     var publicView = ViewBag.PublicView as bool? == true;
+    var ageGroup = ViewBag.AgeGroup as TournamentManager.Domain.Entities.AgeGroup;
     if (publicView) ViewData["HideMainMenu"] = true;
 }
 <div class="d-flex justify-content-between align-items-center gap-2 mb-3">
     <h1 class="h3 mb-0">@(publicView ? "Calendário" : "Calendário")</h1>
     @if (!publicView)
     {
-        <div class="btn-group"><a class="btn btn-outline-primary" asp-action="Preview" asp-route-ageGroupId="@ageGroupId">Pré-visualizar</a><a class="btn btn-primary" asp-action="Generate" asp-route-ageGroupId="@ageGroupId">Gerar</a><a class="btn btn-outline-secondary" asp-action="CreateManual" asp-route-ageGroupId="@ageGroupId">Manual</a></div>
+        <a class="btn btn-outline-secondary" asp-action="CreateManual" asp-route-ageGroupId="@ageGroupId">Adicionar jogo manual</a>
     }
 </div>
 @if (publicView)
@@ -39,6 +40,20 @@
         </div>
     }
 </div>
+@if (ageGroup?.CompetitionFormat == CompetitionFormat.GroupStageAndFinals)
+{
+    if (!Model.Any(x => x.Phase != CompetitionPhase.GroupStage))
+    {
+        var games = ageGroup.FinalsStartPhase switch { CompetitionPhase.RoundOf16 => 8, CompetitionPhase.QuarterFinal => 4, CompetitionPhase.SemiFinal => 2, CompetitionPhase.Final => 1, _ => 2 };
+        <h2 class="h5 mt-4">Fase final prevista</h2>
+        <div class="list-group shadow-sm mb-3">
+            @for (var i = 1; i <= games; i++)
+            {
+                <div class="list-group-item text-muted"><strong>@ageGroup.FinalsStartPhase @i</strong><div>Lugar apurado @i vs Lugar apurado @(games * 2 - i + 1)</div></div>
+            }
+        </div>
+    }
+}
 @if (!Model.Any())
 {
     <div class="alert alert-info mt-3">Não existem jogos para apresentar.</div>

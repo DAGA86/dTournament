@@ -12,5 +12,8 @@ public sealed class AgeGroupCreateViewModel
     [Range(1, 180)] public int MatchDurationMinutes { get; set; } = 20;
     [Range(1, 2)] public int NumberOfPeriods { get; set; } = 1;
     [Range(0, 60)] public int HalfTimeBreakMinutes { get; set; }
+    [Range(1, 26)] public int GroupCount { get; set; } = 2;
+    [Range(1, 16)] public int AdvancingTeamsPerGroup { get; set; } = 2;
+    public CompetitionPhase FinalsStartPhase { get; set; } = CompetitionPhase.SemiFinal;
     public CompetitionFormat CompetitionFormat { get; set; }
 }

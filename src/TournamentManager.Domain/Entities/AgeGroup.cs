@@ -19,7 +19,9 @@ public sealed class AgeGroup : BaseEntity
     public CompetitionFormat CompetitionFormat { get; set; } = CompetitionFormat.RoundRobin;
     public int RoundRobinLegs { get; set; } = 1;
     public int? FixedMatchesPerTeam { get; set; }
+    public int GroupCount { get; set; } = 1;
     public int AdvancingTeamsPerGroup { get; set; } = 2;
+    public CompetitionPhase FinalsStartPhase { get; set; } = CompetitionPhase.SemiFinal;
     public ICollection<Group> Groups { get; set; } = new List<Group>();
     public ICollection<Team> Teams { get; set; } = new List<Team>();
     public ICollection<Match> Matches { get; set; } = new List<Match>();
@@ -33,5 +35,7 @@ public sealed class AgeGroup : BaseEntity
         if (HalfTimeBreakMinutes < 0) throw new InvalidOperationException("Half-time break cannot be negative.");
         if (BirthYearFrom.HasValue && BirthYearTo.HasValue && BirthYearFrom > BirthYearTo) throw new InvalidOperationException("The first birth year cannot be greater than the last birth year.");
         if (RoundRobinLegs is < 1 or > 2) throw new InvalidOperationException("Round robin legs must be one or two.");
+        if (CompetitionFormat == CompetitionFormat.GroupStageAndFinals && GroupCount < 1) throw new InvalidOperationException("At least one group is required.");
+        if (CompetitionFormat == CompetitionFormat.GroupStageAndFinals && AdvancingTeamsPerGroup < 1) throw new InvalidOperationException("At least one team per group must qualify.");
     }
 }

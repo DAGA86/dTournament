@@ -15,4 +15,5 @@ public sealed record MatchDto(
     int PlannedDurationMinutes,
     MatchStatus Status,
     int? HomeScore,
-    int? AwayScore);
+    int? AwayScore,
+    CompetitionPhase Phase = CompetitionPhase.League);

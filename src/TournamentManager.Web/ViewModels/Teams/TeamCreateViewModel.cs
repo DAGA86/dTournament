@@ -11,4 +11,5 @@ public sealed class TeamCreateViewModel
     [Required, MaxLength(160)] public string ResponsiblePerson { get; set; } = string.Empty;
     [MaxLength(160)] public string? Contact { get; set; }
     [MaxLength(16)] public string? PrimaryColor { get; set; }
+    public Guid? GroupId { get; set; }
 }

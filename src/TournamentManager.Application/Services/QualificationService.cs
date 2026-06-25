@@ -7,16 +7,21 @@ namespace TournamentManager.Application.Services;
 
 public sealed class QualificationService(IAgeGroupRepository ageGroupRepository, IMatchRepository matchRepository, StandingsCalculationService standingsCalculationService)
 {
-    public async Task CreateSemiFinalsAsync(Guid ageGroupId, CancellationToken cancellationToken = default)
+    public async Task CreateNextPhaseAsync(Guid ageGroupId, CancellationToken cancellationToken = default)
     {
         var ageGroup = await ageGroupRepository.GetAsync(ageGroupId, cancellationToken) ?? throw new InvalidOperationException("Age group was not found.");
         var existing = await matchRepository.ListByAgeGroupWithTeamsAsync(ageGroupId, cancellationToken);
-        if (existing.Any(x => x.Phase == CompetitionPhase.SemiFinal)) return;
-        var qualified = (await standingsCalculationService.CalculateAsync(ageGroupId, cancellationToken)).Take(4).ToList();
-        if (qualified.Count < 4) throw new InvalidOperationException("At least four qualified teams are required to create semi-finals.");
-        var firstSemiFinal = CreateKnockoutMatch(ageGroup, CompetitionPhase.SemiFinal, 1, qualified[0].TeamId, qualified[3].TeamId);
-        var secondSemiFinal = CreateKnockoutMatch(ageGroup, CompetitionPhase.SemiFinal, 2, qualified[1].TeamId, qualified[2].TeamId);
-        await matchRepository.AddRangeAsync(new[] { firstSemiFinal, secondSemiFinal }, cancellationToken);
+        if (existing.Where(x => x.Phase == CompetitionPhase.GroupStage).Any(x => x.Status != MatchStatus.Finished)) throw new InvalidOperationException("All group-stage matches must be finished before creating the next phase.");
+        var phase = ageGroup.FinalsStartPhase;
+        if (existing.Any(x => x.Phase == phase)) return;
+        var grouped = await standingsCalculationService.CalculateByGroupAsync(ageGroupId, cancellationToken);
+        var qualified = grouped.Values.SelectMany(x => x.Take(ageGroup.AdvancingTeamsPerGroup)).ToList();
+        var required = phase switch { CompetitionPhase.RoundOf16 => 16, CompetitionPhase.QuarterFinal => 8, CompetitionPhase.SemiFinal => 4, CompetitionPhase.Final => 2, _ => 4 };
+        if (qualified.Count < required) throw new InvalidOperationException($"At least {required} qualified teams are required to create this phase.");
+        qualified = qualified.Take(required).ToList();
+        var knockoutMatches = new List<Domain.Entities.Match>();
+        for (var index = 0; index < required / 2; index++) knockoutMatches.Add(CreateKnockoutMatch(ageGroup, phase, index + 1, qualified[index].TeamId, qualified[required - index - 1].TeamId));
+        await matchRepository.AddRangeAsync(knockoutMatches, cancellationToken);
         await matchRepository.SaveChangesAsync(cancellationToken);
     }
 
