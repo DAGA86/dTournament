@@ -72,10 +72,9 @@ public sealed class MatchManagementService(IMatchRepository matchRepository, IPl
         var isOwnGoal = player.TeamId != teamId;
         var now = DateTimeOffset.UtcNow;
         var currentPeriodNumber = match.GetCurrentPeriodNumber(now);
-        var goal = new GoalEvent { MatchId = matchId, TeamId = teamId, PlayerId = playerId, MatchMinute = match.GetCurrentMatchMinute(now, currentPeriodNumber), MatchPeriodNumber = currentPeriodNumber, IsOwnGoal = isOwnGoal, RecordedByUserId = userId };
+        var goal = new GoalEvent { MatchId = matchId, Match = match, TeamId = teamId, PlayerId = playerId, MatchMinute = match.GetCurrentMatchMinute(now, currentPeriodNumber), MatchPeriodNumber = currentPeriodNumber, IsOwnGoal = isOwnGoal, RecordedByUserId = userId };
         goal.Validate();
         await matchRepository.AddGoalAsync(goal, cancellationToken);
-        match.GoalEvents.Add(goal);
         RecalculateScore(match);
         match.UpdatedAtUtc = DateTimeOffset.UtcNow;
         await matchRepository.SaveChangesAsync(cancellationToken);

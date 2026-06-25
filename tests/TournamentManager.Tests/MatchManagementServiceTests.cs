@@ -58,6 +58,27 @@ public sealed class MatchManagementServiceTests
         Assert.False(Assert.Single(matchRepository.AddedGoals).IsOwnGoal);
     }
 
+    [Fact]
+    public async Task RegisterGoalAsync_Recalculates_Score_From_Tracked_Goal_Events_Without_Duplicating_New_Goal()
+    {
+        var home = NewTeam("Home");
+        var away = NewTeam("Away");
+        var firstScorer = NewPlayer(home, "First scorer");
+        var secondScorer = NewPlayer(home, "Second scorer");
+        var match = NewMatch(home, away);
+        match.GoalEvents.Add(NewGoal(match, home, firstScorer, 5, 1, DateTimeOffset.UtcNow.AddMinutes(-10)));
+        match.HomeScore = 1;
+        match.AwayScore = 0;
+        var matchRepository = new FakeMatchRepository(match);
+        var service = new MatchManagementService(matchRepository, new FakePlayerRepository(secondScorer));
+
+        await service.RegisterGoalAsync(match.Id, home.Id, secondScorer.Id, "operator");
+
+        Assert.Equal(2, match.HomeScore);
+        Assert.Equal(0, match.AwayScore);
+        Assert.Equal(2, match.GoalEvents.Count(x => x.TeamId == home.Id));
+    }
+
     private static Match NewMatch(Team home, Team away) => new()
     {
         Id = Guid.NewGuid(),
@@ -111,7 +132,7 @@ public sealed class MatchManagementServiceTests
         public Task<DateTimeOffset?> GetFirstScheduledStartForTeamAsync(Guid teamId, CancellationToken cancellationToken = default) => Task.FromResult<DateTimeOffset?>(matches.Where(x => (x.HomeTeamId == teamId || x.AwayTeamId == teamId) && x.ScheduledStartUtc.HasValue).OrderBy(x => x.ScheduledStartUtc).Select(x => x.ScheduledStartUtc).FirstOrDefault());
         public Task AddRangeAsync(IEnumerable<Match> matches, CancellationToken cancellationToken = default) => Task.CompletedTask;
         public Task AddAsync(Match match, CancellationToken cancellationToken = default) => Task.CompletedTask;
-        public Task AddGoalAsync(GoalEvent goalEvent, CancellationToken cancellationToken = default) { AddedGoals.Add(goalEvent); return Task.CompletedTask; }
+        public Task AddGoalAsync(GoalEvent goalEvent, CancellationToken cancellationToken = default) { AddedGoals.Add(goalEvent); goalEvent.Match = matches.FirstOrDefault(x => x.Id == goalEvent.MatchId); goalEvent.Match?.GoalEvents.Add(goalEvent); return Task.CompletedTask; }
         public Task<GoalEvent?> GetGoalAsync(Guid goalEventId, CancellationToken cancellationToken = default) => Task.FromResult<GoalEvent?>(null);
         public Task<PlayerOfTheMatchVote?> GetVoteAsync(Guid matchId, Guid teamId, CancellationToken cancellationToken = default) => Task.FromResult<PlayerOfTheMatchVote?>(null);
         public Task AddVoteAsync(PlayerOfTheMatchVote vote, CancellationToken cancellationToken = default) => Task.CompletedTask;

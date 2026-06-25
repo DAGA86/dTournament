@@ -63,7 +63,7 @@
             <div class="text-muted small">@(match.ScheduledStartUtc?.ToString("dd/MM/yyyy HH:mm") ?? "Sem data") · @(match.VenueName ?? "Sem campo") · @match.PlannedDurationMinutes min</div>
             @if (isLive && !string.IsNullOrWhiteSpace(match.CurrentMatchMinuteDisplay))
             {
-                <div class="mt-2"><span class="badge bg-danger">@match.CurrentMatchMinuteDisplay' minuto</span> <span class="fw-semibold">Resultado atual: @(match.HomeScore ?? 0) - @(match.AwayScore ?? 0)</span></div>
+                <div class="mt-2"><span class="badge bg-danger">@match.CurrentMatchMinuteDisplay'</span> <span class="fw-semibold">Resultado atual: @(match.HomeScore ?? 0) - @(match.AwayScore ?? 0)</span></div>
             }
             @if (isLive && match.Goals?.Any(x => x.IsActive) == true)
             {
