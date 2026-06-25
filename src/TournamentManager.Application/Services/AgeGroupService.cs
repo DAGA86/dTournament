@@ -15,7 +15,7 @@ public sealed class AgeGroupService(IAgeGroupRepository ageGroupRepository, ITou
 
     public async Task<AgeGroup?> GetEntityAsync(Guid ageGroupId, CancellationToken cancellationToken = default) => await ageGroupRepository.GetAsync(ageGroupId, cancellationToken);
 
-    public async Task<Guid> CreateAsync(Guid tournamentId, string name, int? birthYearFrom, int? birthYearTo, int matchDurationMinutes, int numberOfPeriods, int halfTimeBreakMinutes, CompetitionFormat competitionFormat, int groupCount, int advancingTeamsPerGroup, CompetitionPhase finalsStartPhase, IReadOnlyList<PlannedMatchInput>? plannedMatches = null, CancellationToken cancellationToken = default)
+    public async Task<Guid> CreateAsync(Guid tournamentId, string name, int? birthYearFrom, int? birthYearTo, int matchDurationMinutes, int numberOfPeriods, int halfTimeBreakMinutes, CompetitionFormat competitionFormat, int groupCount, CompetitionPhase finalsStartPhase, IReadOnlyList<PlannedMatchInput>? plannedMatches = null, CancellationToken cancellationToken = default)
     {
         _ = await tournamentRepository.GetAsync(tournamentId, cancellationToken) ?? throw new InvalidOperationException("Tournament was not found.");
         var ageGroup = new AgeGroup
@@ -29,7 +29,7 @@ public sealed class AgeGroupService(IAgeGroupRepository ageGroupRepository, ITou
             HalfTimeBreakMinutes = halfTimeBreakMinutes,
             CompetitionFormat = competitionFormat,
             GroupCount = competitionFormat == CompetitionFormat.GroupStageAndFinals ? groupCount : 1,
-            AdvancingTeamsPerGroup = competitionFormat == CompetitionFormat.GroupStageAndFinals ? advancingTeamsPerGroup : 0,
+            AdvancingTeamsPerGroup = competitionFormat == CompetitionFormat.GroupStageAndFinals ? 1 : 0,
             FinalsStartPhase = finalsStartPhase
         };
         ageGroup.Validate();

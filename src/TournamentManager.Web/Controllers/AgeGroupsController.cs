@@ -32,7 +32,7 @@ public sealed class AgeGroupsController(AgeGroupService ageGroupService, VenueSe
         try
         {
             var plannedMatches = model.PlannedMatches.Select(x => new PlannedMatchInput(x.RoundNumber, x.Phase, x.ScheduledStartUtc, x.VenueId)).ToList();
-            await ageGroupService.CreateAsync(model.TournamentId, model.Name, model.BirthYearFrom, model.BirthYearTo, model.MatchDurationMinutes, model.NumberOfPeriods, model.HalfTimeBreakMinutes, model.CompetitionFormat, model.GroupCount, model.AdvancingTeamsPerGroup, model.FinalsStartPhase, plannedMatches, cancellationToken);
+            await ageGroupService.CreateAsync(model.TournamentId, model.Name, model.BirthYearFrom, model.BirthYearTo, model.MatchDurationMinutes, model.NumberOfPeriods, model.HalfTimeBreakMinutes, model.CompetitionFormat, model.GroupCount, model.FinalsStartPhase, plannedMatches, cancellationToken);
             return RedirectToAction(nameof(Index), new { tournamentId = model.TournamentId });
         }
         catch (InvalidOperationException ex)

@@ -31,13 +31,10 @@
                 </div>
                 <div class="col-md-3" data-format-option="groupStageAndFinals">
                     <label asp-for="FinalsStartPhase" class="form-label">Primeira fase final</label>
-                    <select asp-for="FinalsStartPhase" asp-items="Html.GetEnumSelectList<CompetitionPhase>()" class="form-select" id="finalsStartPhase"></select>
+                    <select asp-for="FinalsStartPhase" class="form-select" id="finalsStartPhase"><option value="2">Oitavos</option><option value="3">Quartos</option><option value="4">Meia-final</option><option value="6">Final</option></select>
                 </div>
             </div>
-            <div data-format-option="groupStageAndFinals">
-                <label asp-for="AdvancingTeamsPerGroup" class="form-label">Lugares apurados por grupo</label>
-                <input asp-for="AdvancingTeamsPerGroup" class="form-control" id="advancingTeamsPerGroup" />
-            </div>
+            <p class="text-muted small mb-0" data-format-option="groupStageAndFinals">As equipas apuradas para a fase final são escolhidas manualmente nas opções dos jogos.</p>
             <p class="text-muted small mb-0">Ao guardar o escalão são criados jogos por agendar, sem equipas. As equipas da casa e visitante são escolhidas depois no novo ecrã de opções do jogo.</p>
         </div>
     </div>
@@ -77,5 +74,5 @@
        for(let m=1;m<=count;m++) appendRow(c, i++, m, 0);
      }
     }
-    document.getElementById('rebuildMatches').addEventListener('click', rebuild); ['competitionFormat','teamCount','fixedMatchCount','groupCount','finalsStartPhase','advancingTeamsPerGroup'].forEach(id=>document.getElementById(id).addEventListener('change', rebuild)); rebuild();
+    document.getElementById('rebuildMatches').addEventListener('click', rebuild); ['competitionFormat','teamCount','fixedMatchCount','groupCount','finalsStartPhase'].forEach(id=>document.getElementById(id).addEventListener('change', rebuild)); rebuild();
 </script>
