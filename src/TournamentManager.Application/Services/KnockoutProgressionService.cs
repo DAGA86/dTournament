@@ -79,7 +79,7 @@ public sealed class KnockoutProgressionService(IAgeGroupRepository ageGroupRepos
             existing.UpdatedAtUtc = DateTimeOffset.UtcNow;
             return;
         }
-        var match = new Domain.Entities.Match { TournamentId = ageGroup.TournamentId, AgeGroupId = ageGroup.Id, Phase = phase, RoundNumber = roundNumber, HomeTeamId = homeTeamId, AwayTeamId = awayTeamId, PlannedDurationMinutes = ageGroup.MatchDurationMinutes };
+        var match = new Domain.Entities.Match { TournamentId = ageGroup.TournamentId, AgeGroupId = ageGroup.Id, Phase = phase, RoundNumber = roundNumber, HomeTeamId = homeTeamId, AwayTeamId = awayTeamId, PlannedDurationMinutes = ageGroup.MatchDurationMinutes, PlannedPeriodCount = ageGroup.NumberOfPeriods, HalfTimeBreakMinutes = ageGroup.HalfTimeBreakMinutes };
         match.Validate();
         await matchRepository.AddAsync(match, cancellationToken);
     }

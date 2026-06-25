@@ -27,7 +27,7 @@ public sealed class QualificationService(IAgeGroupRepository ageGroupRepository,
 
     private static Domain.Entities.Match CreateKnockoutMatch(AgeGroup ageGroup, CompetitionPhase phase, int roundNumber, Guid homeTeamId, Guid awayTeamId)
     {
-        var match = new Domain.Entities.Match { TournamentId = ageGroup.TournamentId, AgeGroupId = ageGroup.Id, Phase = phase, RoundNumber = roundNumber, HomeTeamId = homeTeamId, AwayTeamId = awayTeamId, PlannedDurationMinutes = ageGroup.MatchDurationMinutes };
+        var match = new Domain.Entities.Match { TournamentId = ageGroup.TournamentId, AgeGroupId = ageGroup.Id, Phase = phase, RoundNumber = roundNumber, HomeTeamId = homeTeamId, AwayTeamId = awayTeamId, PlannedDurationMinutes = ageGroup.MatchDurationMinutes, PlannedPeriodCount = ageGroup.NumberOfPeriods, HalfTimeBreakMinutes = ageGroup.HalfTimeBreakMinutes };
         match.Validate();
         return match;
     }

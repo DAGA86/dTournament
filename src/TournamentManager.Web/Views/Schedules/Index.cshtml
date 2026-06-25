@@ -28,6 +28,22 @@
         }
         return places;
     }
+
+    static string PhaseLabel(CompetitionPhase phase) => phase switch
+    {
+        CompetitionPhase.League => "Liga",
+        CompetitionPhase.GroupStage => "Fase de grupos",
+        CompetitionPhase.RoundOf16 => "Oitavos de final",
+        CompetitionPhase.QuarterFinal => "Quartos de final",
+        CompetitionPhase.SemiFinal => "Meia-final",
+        CompetitionPhase.ThirdPlace => "3.º/4.º lugar",
+        CompetitionPhase.Final => "Final",
+        _ => phase.ToString()
+    };
+
+    static string RoundLabel(MatchDto match) => match.Phase is CompetitionPhase.League or CompetitionPhase.GroupStage
+        ? $"Jornada {match.RoundNumber}"
+        : $"{PhaseLabel(match.Phase)} {match.RoundNumber}";
 }
 <div class="d-flex justify-content-between align-items-center gap-2 mb-3">
     <h1 class="h3 mb-0">@(liveOnly ? "Jogos a decorrer" : "Calendário")</h1>
@@ -54,7 +70,7 @@
         var isLive = match.Status is MatchStatus.InProgress or MatchStatus.Paused;
         var hasResult = (match.Status == MatchStatus.Finished && match.HomeScore.HasValue && match.AwayScore.HasValue) || isLive;
         <div class="list-group-item">
-            <div class="d-flex justify-content-between"><strong>Jornada @match.RoundNumber</strong><span class="badge @(isLive ? "bg-danger" : "bg-secondary")">@match.Status</span></div>
+            <div class="d-flex justify-content-between"><strong>@RoundLabel(match)</strong><span class="badge @(isLive ? "bg-danger" : "bg-secondary")">@match.Status</span></div>
             <div>
                 <a asp-controller="Home" asp-action="Team" asp-route-id="@match.HomeTeamId">@match.HomeTeamName</a>
                 @(hasResult ? (match.HomeScore ?? 0) : null) - @(hasResult ? (match.AwayScore ?? 0) : null)
@@ -63,7 +79,14 @@
             <div class="text-muted small">@(match.ScheduledStartUtc?.ToString("dd/MM/yyyy HH:mm") ?? "Sem data") · @(match.VenueName ?? "Sem campo") · @match.PlannedDurationMinutes min</div>
             @if (isLive && !string.IsNullOrWhiteSpace(match.CurrentMatchMinuteDisplay))
             {
-                <div class="mt-2"><span class="badge bg-danger">@match.CurrentMatchMinuteDisplay'</span> <span class="fw-semibold">Resultado atual: @(match.HomeScore ?? 0) - @(match.AwayScore ?? 0)</span></div>
+                <div class="mt-2">
+                    <span class="badge bg-danger">@match.CurrentMatchMinuteDisplay'</span>
+                    @if (match.PlannedPeriodCount > 1)
+                    {
+                        <span class="badge bg-light text-dark border">@(match.CurrentPeriodNumber).ª parte</span>
+                    }
+                    <span class="fw-semibold">Resultado atual: @(match.HomeScore ?? 0) - @(match.AwayScore ?? 0)</span>
+                </div>
             }
             @if (isLive && match.Goals?.Any(x => x.IsActive) == true)
             {
@@ -86,19 +109,27 @@
 </div>
 @if (ageGroup?.CompetitionFormat == CompetitionFormat.GroupStageAndFinals)
 {
-    if (!Model.Any(x => x.Phase != CompetitionPhase.GroupStage))
+    var expectedFinalPhases = new[] { CompetitionPhase.RoundOf16, CompetitionPhase.QuarterFinal, CompetitionPhase.SemiFinal, CompetitionPhase.Final };
+    var placeholderPhases = expectedFinalPhases
+        .SkipWhile(x => x != ageGroup.FinalsStartPhase)
+        .Where(x => !Model.Any(match => match.Phase == x))
+        .ToList();
+    if (placeholderPhases.Any())
     {
-        var games = ageGroup.FinalsStartPhase switch { CompetitionPhase.RoundOf16 => 8, CompetitionPhase.QuarterFinal => 4, CompetitionPhase.SemiFinal => 2, CompetitionPhase.Final => 1, _ => 2 };
         var places = QualificationPlaces(ageGroup);
         <h2 class="h5 mt-4">Fase final prevista</h2>
         <div class="list-group shadow-sm mb-3">
-            @for (var i = 1; i <= games; i++)
+            @foreach (var phase in placeholderPhases)
             {
-                var homePlaceIndex = i - 1;
-                var awayPlaceIndex = games * 2 - i;
-                var homePlace = places.Count > homePlaceIndex ? places[homePlaceIndex] : $"Lugar apurado {i}";
-                var awayPlace = places.Count > awayPlaceIndex ? places[awayPlaceIndex] : $"Lugar apurado {games * 2 - i + 1}";
-                <div class="list-group-item text-muted"><strong>@ageGroup.FinalsStartPhase @i</strong><div>@homePlace vs @awayPlace</div></div>
+                var games = phase switch { CompetitionPhase.RoundOf16 => 8, CompetitionPhase.QuarterFinal => 4, CompetitionPhase.SemiFinal => 2, CompetitionPhase.Final => 1, _ => 0 };
+                for (var i = 1; i <= games; i++)
+                {
+                    var homePlaceIndex = i - 1;
+                    var awayPlaceIndex = games * 2 - i;
+                    var homePlace = phase == ageGroup.FinalsStartPhase && places.Count > homePlaceIndex ? places[homePlaceIndex] : "A definir";
+                    var awayPlace = phase == ageGroup.FinalsStartPhase && places.Count > awayPlaceIndex ? places[awayPlaceIndex] : "A definir";
+                    <div class="list-group-item text-muted"><strong>@PhaseLabel(phase) @i</strong><div>@homePlace vs @awayPlace</div></div>
+                }
             }
         </div>
     }

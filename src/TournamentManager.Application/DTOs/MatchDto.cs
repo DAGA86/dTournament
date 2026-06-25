@@ -21,4 +21,6 @@ public sealed record MatchDto(
     CompetitionPhase Phase = CompetitionPhase.League,
     int? CurrentMatchMinute = null,
     string? CurrentMatchMinuteDisplay = null,
+    int CurrentPeriodNumber = 1,
+    int PlannedPeriodCount = 1,
     IReadOnlyList<MatchGoalDto>? Goals = null);
