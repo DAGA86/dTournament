@@ -6,7 +6,11 @@ using TournamentManager.Web.ViewModels.AgeGroups;
 namespace TournamentManager.Web.Controllers;
 
 [Authorize(Policy = "AuthenticatedViewer")]
-public sealed class AgeGroupsController(AgeGroupService ageGroupService, VenueService venueService, TournamentService tournamentService) : Controller
+public sealed class AgeGroupsController(
+    AgeGroupService ageGroupService,
+    VenueService venueService,
+    TournamentService tournamentService,
+    ILogger<AgeGroupsController> logger) : Controller
 {
     public async Task<IActionResult> Index(Guid tournamentId, CancellationToken cancellationToken)
     {
@@ -45,6 +49,13 @@ public sealed class AgeGroupsController(AgeGroupService ageGroupService, VenueSe
         catch (InvalidOperationException ex)
         {
             ModelState.AddModelError(string.Empty, ex.Message);
+            await PopulateCreateListsAsync(model.TournamentId, cancellationToken);
+            return View(model);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Unexpected error while creating age group {AgeGroupName} for tournament {TournamentId} with {PlannedMatchCount} planned matches.", model.Name, model.TournamentId, model.PlannedMatches.Count);
+            ModelState.AddModelError(string.Empty, "Não foi possível criar o escalão. Confirme os dados dos jogos e tente novamente; se o problema persistir, contacte o administrador.");
             await PopulateCreateListsAsync(model.TournamentId, cancellationToken);
             return View(model);
         }

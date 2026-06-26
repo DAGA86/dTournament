@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.RateLimiting;
@@ -14,6 +15,12 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
 builder.Services.AddControllersWithViews(options => options.Filters.Add(new Microsoft.AspNetCore.Mvc.AutoValidateAntiforgeryTokenAttribute())).AddViewLocalization().AddDataAnnotationsLocalization();
+builder.Services.Configure<FormOptions>(options =>
+{
+    // The age-group creation form can submit one row per planned match. Keep the limit explicit so
+    // reverse-proxy/host defaults do not reject larger schedules before MVC model binding runs.
+    options.ValueCountLimit = 4096;
+});
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddScoped<TournamentService>();
 builder.Services.AddScoped<AgeGroupValidationService>();
