@@ -16,7 +16,7 @@ public sealed class StandingsCalculationServiceTests
         var home = new Team { Id = Guid.NewGuid(), AgeGroupId = ageGroupId, Name = "Home", ShortName = "H", Club = "Club" };
         var away = new Team { Id = Guid.NewGuid(), AgeGroupId = ageGroupId, Name = "Away", ShortName = "A", Club = "Club" };
         var ageGroup = new AgeGroup { Id = ageGroupId, TournamentId = tournamentId, Name = "U10", PointsPerWin = 3, PointsPerDraw = 1, PointsPerLoss = 0 };
-        var match = new Match { Id = Guid.NewGuid(), TournamentId = tournamentId, AgeGroupId = ageGroupId, HomeTeamId = home.Id, AwayTeamId = away.Id, RoundNumber = 1, Status = MatchStatus.Finished };
+        var match = new Match { Id = Guid.NewGuid(), TournamentId = tournamentId, AgeGroupId = ageGroupId, HomeTeamId = home.Id, AwayTeamId = away.Id, Status = MatchStatus.Finished };
         match.GoalEvents.Add(new GoalEvent { Id = Guid.NewGuid(), MatchId = match.Id, TeamId = home.Id, PlayerId = Guid.NewGuid(), RecordedByUserId = "user" });
         match.GoalEvents.Add(new GoalEvent { Id = Guid.NewGuid(), MatchId = match.Id, TeamId = home.Id, PlayerId = Guid.NewGuid(), RecordedByUserId = "user" });
         match.GoalEvents.Add(new GoalEvent { Id = Guid.NewGuid(), MatchId = match.Id, TeamId = away.Id, PlayerId = Guid.NewGuid(), RecordedByUserId = "user" });

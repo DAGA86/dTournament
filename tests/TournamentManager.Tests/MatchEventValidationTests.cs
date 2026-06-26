@@ -23,7 +23,7 @@ public sealed class MatchEventValidationTests
     public void Match_Validate_Throws_When_Team_Plays_Against_Itself()
     {
         var teamId = Guid.NewGuid();
-        var match = new Match { TournamentId = Guid.NewGuid(), AgeGroupId = Guid.NewGuid(), HomeTeamId = teamId, AwayTeamId = teamId, RoundNumber = 1 };
+        var match = new Match { TournamentId = Guid.NewGuid(), AgeGroupId = Guid.NewGuid(), HomeTeamId = teamId, AwayTeamId = teamId };
         Assert.Throws<InvalidOperationException>(() => match.Validate());
     }
 }

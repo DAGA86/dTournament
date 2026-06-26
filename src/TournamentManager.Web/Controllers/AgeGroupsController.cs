@@ -42,7 +42,7 @@ public sealed class AgeGroupsController(
         }
         try
         {
-            var plannedMatches = model.PlannedMatches.Select(x => new PlannedMatchInput(x.RoundNumber, x.Phase, x.GroupDisplayOrder, x.ScheduledStartUtc, x.VenueId)).ToList();
+            var plannedMatches = model.PlannedMatches.Select(x => new PlannedMatchInput(x.Phase, x.GroupDisplayOrder, x.ScheduledStartUtc, x.VenueId)).ToList();
             await ageGroupService.CreateAsync(model.TournamentId, model.Name, model.BirthYearFrom, model.BirthYearTo, model.MatchDurationMinutes, model.NumberOfPeriods, model.NumberOfPeriods == 1 ? 0 : model.HalfTimeBreakMinutes, model.CompetitionFormat, model.GroupCount, model.FinalsStartPhase, plannedMatches, cancellationToken);
             return RedirectToAction(nameof(Index), new { tournamentId = model.TournamentId });
         }

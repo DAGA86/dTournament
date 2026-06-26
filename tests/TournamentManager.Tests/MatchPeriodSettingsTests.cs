@@ -22,7 +22,7 @@ public sealed class MatchPeriodSettingsTests
     [Fact]
     public void Match_Validate_Throws_When_Period_Count_Is_Invalid()
     {
-        var match = new Match { TournamentId = Guid.NewGuid(), AgeGroupId = Guid.NewGuid(), HomeTeamId = Guid.NewGuid(), AwayTeamId = Guid.NewGuid(), RoundNumber = 1, PlannedPeriodCount = 3 };
+        var match = new Match { TournamentId = Guid.NewGuid(), AgeGroupId = Guid.NewGuid(), HomeTeamId = Guid.NewGuid(), AwayTeamId = Guid.NewGuid(), PlannedPeriodCount = 3 };
         Assert.Throws<InvalidOperationException>(() => match.Validate());
     }
 

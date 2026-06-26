@@ -11,7 +11,6 @@ public sealed class Match : BaseEntity
     public Guid? GroupId { get; set; }
     public Group? Group { get; set; }
     public CompetitionPhase Phase { get; set; } = CompetitionPhase.League;
-    public int RoundNumber { get; set; }
     public Guid? HomeTeamId { get; set; }
     public Team? HomeTeam { get; set; }
     public Guid? AwayTeamId { get; set; }
@@ -122,7 +121,6 @@ public sealed class Match : BaseEntity
     public void Validate()
     {
         if (HomeTeamId.HasValue && AwayTeamId.HasValue && HomeTeamId == AwayTeamId) throw new InvalidOperationException("A team cannot play against itself.");
-        if (RoundNumber <= 0) throw new InvalidOperationException("Round number must be greater than zero.");
         if (PlannedDurationMinutes <= 0) throw new InvalidOperationException("Planned duration must be greater than zero.");
         if (PlannedPeriodCount is < 1 or > 2) throw new InvalidOperationException("Planned period count must be one or two.");
         if (HalfTimeBreakMinutes < 0) throw new InvalidOperationException("Half-time break cannot be negative.");

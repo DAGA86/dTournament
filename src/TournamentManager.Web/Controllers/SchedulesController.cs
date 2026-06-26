@@ -33,7 +33,7 @@ public sealed class SchedulesController(MatchScheduleService matchScheduleServic
 
         try
         {
-            await matchScheduleService.CreateManualAsync(model.AgeGroupId, model.HomeTeamId, model.AwayTeamId, model.RoundNumber, model.ScheduledStartUtc, model.VenueId, cancellationToken);
+            await matchScheduleService.CreateManualAsync(model.AgeGroupId, model.HomeTeamId, model.AwayTeamId, model.ScheduledStartUtc, model.VenueId, cancellationToken);
             return RedirectToAction(nameof(Index), new { ageGroupId = model.AgeGroupId });
         }
         catch (InvalidOperationException ex)

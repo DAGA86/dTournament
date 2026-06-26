@@ -88,7 +88,6 @@ public sealed class MatchManagementServiceTests
         HomeTeam = home,
         AwayTeamId = away.Id,
         AwayTeam = away,
-        RoundNumber = 1,
         Status = MatchStatus.InProgress,
         ActualStartUtc = DateTimeOffset.UtcNow.AddMinutes(-16),
         PlannedDurationMinutes = 30,

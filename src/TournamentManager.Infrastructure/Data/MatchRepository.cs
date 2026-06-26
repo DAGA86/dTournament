@@ -18,11 +18,10 @@ public sealed class MatchRepository(ApplicationDbContext dbContext) : IMatchRepo
         .ThenBy(x => x.ScheduledStartUtc)
         .ThenBy(x => x.Group == null ? int.MaxValue : x.Group.DisplayOrder)
         .ThenBy(x => x.Group == null ? x.Phase : TournamentManager.Domain.Enums.CompetitionPhase.GroupStage)
-        .ThenBy(x => x.Group == null ? x.RoundNumber : 0)
         .ThenBy(x => x.Group == null ? string.Empty : x.Group.Name)
         .ToListAsync(cancellationToken);
     public async Task<IReadOnlyList<Match>> ListByAgeGroupWithTeamsAsync(Guid ageGroupId, CancellationToken cancellationToken = default) => await dbContext.Matches.Include(x => x.HomeTeam).Include(x => x.AwayTeam).Where(x => x.AgeGroupId == ageGroupId).ToListAsync(cancellationToken);
-    public async Task<IReadOnlyList<Match>> ListByTeamAsync(Guid teamId, CancellationToken cancellationToken = default) => await dbContext.Matches.Include(x => x.HomeTeam).Include(x => x.AwayTeam).Include(x => x.Venue).Where(x => x.HomeTeamId == teamId || x.AwayTeamId == teamId).OrderBy(x => x.ScheduledStartUtc).ThenBy(x => x.RoundNumber).ToListAsync(cancellationToken);
+    public async Task<IReadOnlyList<Match>> ListByTeamAsync(Guid teamId, CancellationToken cancellationToken = default) => await dbContext.Matches.Include(x => x.HomeTeam).Include(x => x.AwayTeam).Include(x => x.Venue).Where(x => x.HomeTeamId == teamId || x.AwayTeamId == teamId).OrderBy(x => x.ScheduledStartUtc).ThenBy(x => x.Phase).ToListAsync(cancellationToken);
     public async Task<IReadOnlyList<Match>> ListByTeamWithGoalEventsAsync(Guid teamId, CancellationToken cancellationToken = default) => await dbContext.Matches.Include(x => x.GoalEvents).Where(x => x.HomeTeamId == teamId || x.AwayTeamId == teamId).ToListAsync(cancellationToken);
     public async Task<IReadOnlyList<Match>> ListFinishedByAgeGroupAsync(Guid ageGroupId, CancellationToken cancellationToken = default) => await dbContext.Matches
         .Include(x => x.GoalEvents).ThenInclude(x => x.Player).ThenInclude(x => x!.Team)

@@ -63,7 +63,6 @@ public sealed class AgeGroupService(IAgeGroupRepository ageGroupRepository, ITou
                     GroupId = planned.Phase == CompetitionPhase.GroupStage && planned.GroupDisplayOrder.HasValue
                         ? ageGroup.Groups.FirstOrDefault(x => x.DisplayOrder == planned.GroupDisplayOrder.Value)?.Id
                         : null,
-                    RoundNumber = planned.RoundNumber,
                     ScheduledStartUtc = planned.ScheduledStartUtc,
                     VenueId = planned.VenueId,
                     PlannedDurationMinutes = matchDurationMinutes,
@@ -79,4 +78,4 @@ public sealed class AgeGroupService(IAgeGroupRepository ageGroupRepository, ITou
     }
 }
 
-public sealed record PlannedMatchInput(int RoundNumber, CompetitionPhase Phase, int? GroupDisplayOrder, DateTimeOffset? ScheduledStartUtc, Guid? VenueId);
+public sealed record PlannedMatchInput(CompetitionPhase Phase, int? GroupDisplayOrder, DateTimeOffset? ScheduledStartUtc, Guid? VenueId);

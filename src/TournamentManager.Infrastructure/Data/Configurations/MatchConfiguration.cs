@@ -19,7 +19,7 @@ public sealed class MatchConfiguration : IEntityTypeConfiguration<Match>
         builder.HasOne(x => x.HomeTeam).WithMany().HasForeignKey(x => x.HomeTeamId).OnDelete(DeleteBehavior.Restrict);
         builder.HasOne(x => x.AwayTeam).WithMany().HasForeignKey(x => x.AwayTeamId).OnDelete(DeleteBehavior.Restrict);
         builder.HasOne(x => x.Venue).WithMany().HasForeignKey(x => x.VenueId).OnDelete(DeleteBehavior.Restrict);
-        builder.HasIndex(x => new { x.AgeGroupId, x.RoundNumber });
+        builder.HasIndex(x => x.AgeGroupId);
         builder.HasIndex(x => x.ScheduledStartUtc);
     }
 }

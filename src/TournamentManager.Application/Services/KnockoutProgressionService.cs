@@ -8,7 +8,7 @@ public sealed class KnockoutProgressionService(IAgeGroupRepository ageGroupRepos
     public async Task<IReadOnlyList<Domain.Entities.Match>> ListFinalsAsync(Guid ageGroupId, CancellationToken cancellationToken = default)
     {
         var matches = await matchRepository.ListByAgeGroupWithTeamsAsync(ageGroupId, cancellationToken);
-        return matches.Where(x => x.Phase is CompetitionPhase.RoundOf16 or CompetitionPhase.QuarterFinal or CompetitionPhase.SemiFinal or CompetitionPhase.Final or CompetitionPhase.ThirdPlace).OrderBy(x => x.Phase).ThenBy(x => x.RoundNumber).ToList();
+        return matches.Where(x => x.Phase is CompetitionPhase.RoundOf16 or CompetitionPhase.QuarterFinal or CompetitionPhase.SemiFinal or CompetitionPhase.Final or CompetitionPhase.ThirdPlace).OrderBy(x => x.Phase).ToList();
     }
 
 

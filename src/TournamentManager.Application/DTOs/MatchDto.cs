@@ -11,7 +11,6 @@ public sealed record MatchDto(
     string HomeTeamName,
     Guid? AwayTeamId,
     string AwayTeamName,
-    int RoundNumber,
     DateTimeOffset? ScheduledStartUtc,
     string? VenueName,
     Guid? GroupId,
@@ -27,5 +26,4 @@ public sealed record MatchDto(
     string? CurrentMatchMinuteDisplay = null,
     int CurrentPeriodNumber = 1,
     int PlannedPeriodCount = 1,
-    IReadOnlyList<MatchGoalDto>? Goals = null,
-    bool ShowRoundNumber = true);
+    IReadOnlyList<MatchGoalDto>? Goals = null);
