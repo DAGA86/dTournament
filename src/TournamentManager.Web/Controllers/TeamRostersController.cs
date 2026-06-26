@@ -1,10 +1,12 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using TournamentManager.Application.Services;
 using TournamentManager.Web.ViewModels.TeamRosters;
 
 namespace TournamentManager.Web.Controllers;
 
 [Route("equipas/{teamId:guid}/plantel")]
+[Authorize(Policy = "OperatorOrAdministrator")]
 public sealed class TeamRostersController(TeamRosterSubmissionService rosterService) : Controller
 {
     [HttpGet]
@@ -24,7 +26,7 @@ public sealed class TeamRostersController(TeamRosterSubmissionService rosterServ
         if (!TryValidateModel(model)) return View(model);
         try
         {
-            await rosterService.SubmitAsync(teamId, model.Players.Select(x => (x.FullName, x.ShirtNumber, x.BirthDate)).ToList(), model.StaffMembers.Select(x => (x.FullName, x.Role)).ToList(), enforceSubmissionOpen: !User.IsInRole("Administrator"), cancellationToken: cancellationToken);
+            await rosterService.SubmitAsync(teamId, model.Players.Select(x => (x.FullName, x.ShirtNumber, x.BirthDate)).ToList(), model.StaffMembers.Select(x => (x.FullName, x.Role)).ToList(), enforceSubmissionOpen: !CanManageRosterOutsideSubmissionWindow(), cancellationToken: cancellationToken);
             TempData["RosterSubmitted"] = "Plantel submetido com sucesso.";
             return RedirectToAction(nameof(Edit), new { teamId });
         }
@@ -35,9 +37,11 @@ public sealed class TeamRostersController(TeamRosterSubmissionService rosterServ
         }
     }
 
+    private bool CanManageRosterOutsideSubmissionWindow() => User.IsInRole("Administrator") || User.IsInRole("Operator");
+    
     private async Task<TeamRosterSubmissionViewModel> BuildViewModelAsync(Guid teamId, CancellationToken cancellationToken)
     {
-        var team = await rosterService.GetTeamAsync(teamId, enforceSubmissionOpen: !User.IsInRole("Administrator"), cancellationToken: cancellationToken);
+        var team = await rosterService.GetTeamAsync(teamId, enforceSubmissionOpen: !CanManageRosterOutsideSubmissionWindow(), cancellationToken: cancellationToken);
         var players = await rosterService.ListPlayersAsync(teamId, cancellationToken: cancellationToken);
         var staff = await rosterService.ListStaffAsync(teamId, cancellationToken: cancellationToken);
         var model = new TeamRosterSubmissionViewModel
@@ -57,7 +61,7 @@ public sealed class TeamRostersController(TeamRosterSubmissionService rosterServ
 
     private async Task PopulateTeamNameAsync(TeamRosterSubmissionViewModel model, CancellationToken cancellationToken)
     {
-        var team = await rosterService.GetTeamAsync(model.TeamId, enforceSubmissionOpen: !User.IsInRole("Administrator"), cancellationToken: cancellationToken);
+        var team = await rosterService.GetTeamAsync(model.TeamId, enforceSubmissionOpen: !CanManageRosterOutsideSubmissionWindow(), cancellationToken: cancellationToken);
         model.TeamName = team.Name;
         model.AgeGroupName = team.AgeGroupName;
         model.BirthYearFrom = team.BirthYearFrom;

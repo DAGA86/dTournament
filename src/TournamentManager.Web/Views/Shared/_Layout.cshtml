@@ -15,7 +15,13 @@
             {
                 <a class="navbar-brand fs-1 fw-bold" style="color:black;" asp-controller="Tournaments" asp-action="Index"><img src="~/img/logo.png" width="150" /> IX Abel Costa</a>
                 <div class="ms-auto">
-                    <a class="btn btn-sm btn-light me-1" asp-controller="Venues" asp-action="Index">Campos</a><a class="btn btn-sm btn-light me-1" asp-controller="Admin" asp-action="AuditLog">Auditoria</a><partial name="_LoginPartial" />
+                    @if (User.IsInRole("Administrator"))
+                    {
+                        <a class="btn btn-sm btn-light me-1" asp-controller="Venues" asp-action="Index">Campos</a>
+                        <a class="btn btn-sm btn-light me-1" asp-controller="Admin" asp-action="AuditLog">Auditoria</a>
+                        <a class="btn btn-sm btn-light me-1" asp-controller="Admin" asp-action="Operators">Operators</a>
+                    }
+                    <partial name="_LoginPartial" />
                 </div>
             }
             else

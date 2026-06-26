@@ -1,0 +1,77 @@
+﻿@model OperatorAccountsViewModel
+@{
+    ViewData["Title"] = "Contas operator";
+}
+<h1 class="h3 mb-3">Contas operator</h1>
+
+@if (TempData["OperatorPasswordChanged"] is string message)
+{
+    <div class="alert alert-success">@message</div>
+}
+
+<div class="row g-3">
+    <div class="col-12 col-lg-5">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h2 class="h5">Alterar password</h2>
+                <form asp-action="ChangeOperatorPassword" method="post">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    <div class="mb-3">
+                        <label asp-for="PasswordForm.UserId" class="form-label">Conta</label>
+                        <select asp-for="PasswordForm.UserId" name="UserId" class="form-select">
+                            <option value="">Selecione a conta operator</option>
+                            @foreach (var operatorAccount in Model.Operators)
+                            {
+                                <option value="@operatorAccount.UserId">@operatorAccount.Email</option>
+                            }
+                        </select>
+                        <span asp-validation-for="PasswordForm.UserId" class="text-danger"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="PasswordForm.NewPassword" class="form-label"></label>
+                        <input asp-for="PasswordForm.NewPassword" name="NewPassword" class="form-control" autocomplete="new-password" />
+                        <span asp-validation-for="PasswordForm.NewPassword" class="text-danger"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="PasswordForm.ConfirmPassword" class="form-label"></label>
+                        <input asp-for="PasswordForm.ConfirmPassword" name="ConfirmPassword" class="form-control" autocomplete="new-password" />
+                        <span asp-validation-for="PasswordForm.ConfirmPassword" class="text-danger"></span>
+                    </div>
+                    <button class="btn btn-meirinhas">Alterar password</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-lg-7">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h2 class="h5">Operators existentes</h2>
+                @if (Model.Operators.Count == 0)
+                {
+                    <p class="text-muted mb-0">Ainda não existem contas com o perfil Operator.</p>
+                }
+                else
+                {
+                    <div class="list-group list-group-flush">
+                        @foreach (var operatorAccount in Model.Operators)
+                        {
+                            <div class="list-group-item px-0">
+                                <div class="d-flex justify-content-between gap-2">
+                                    <div>
+                                        <strong>@operatorAccount.Email</strong>
+                                        @if (!string.IsNullOrWhiteSpace(operatorAccount.DisplayName))
+                                        {
+                                            <div class="text-muted small">@operatorAccount.DisplayName</div>
+                                        }
+                                    </div>
+                                    <span class="badge @(operatorAccount.IsLockedOut ? "bg-warning text-dark" : "bg-success")">@(operatorAccount.IsLockedOut ? "Bloqueada" : "Ativa")</span>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+

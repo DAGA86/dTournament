@@ -49,6 +49,17 @@ dotnet user-secrets set "InitialAdmin:Password" "<strong unique password>" --pro
 
 O utilizador inicial é criado no arranque se ainda não existir. As funções `Administrator`, `Operator` e `Viewer` também são criadas. O registo público está desativado; novos utilizadores devem ser criados/atribuídos a perfis por um administrador ou por seed/configuração controlada.
 
+## Conta operator inicial
+
+Opcionalmente, configure uma conta `Operator` partilhada por secrets/ambiente. Esta conta é criada no arranque se ainda não existir e fica limitada à operação de jogos, jogadores e staff; a gestão de escalões, campos, equipas, jogos e ordenação pública continua reservada a administradores.
+
+```bash
+dotnet user-secrets set "InitialOperator:Email" "operator@example.com" --project src/TournamentManager.Web
+dotnet user-secrets set "InitialOperator:Password" "<strong unique password>" --project src/TournamentManager.Web
+```
+
+Um administrador pode alterar a password das contas `Operator` na área `Admin > Operators`.
+
 ## Migrations
 
 ```bash

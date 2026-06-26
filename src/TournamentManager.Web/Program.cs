@@ -69,4 +69,5 @@ app.MapControllerRoute(name: "default", pattern: "{controller=Home}/{action=Inde
 app.MapRazorPages();
 app.MapHub<TournamentUpdatesHub>("/hubs/tournament-updates");
 await IdentitySeeder.SeedFirstAdministratorAsync(app.Services, app.Configuration, app.Logger);
+await IdentitySeeder.SeedConfiguredOperatorAsync(app.Services, app.Configuration, app.Logger);
 app.Run();

@@ -5,7 +5,10 @@
 }
 <div class="d-flex justify-content-between align-items-center gap-2 mb-3">
     <h1 class="h3 mb-0">Escalões</h1>
-    <a class="btn btn-meirinhas" asp-action="Create" asp-route-tournamentId="@tournamentId">Criar</a>
+    @if (User.IsInRole("Administrator"))
+    {
+        <a class="btn btn-meirinhas" asp-action="Create" asp-route-tournamentId="@tournamentId">Criar</a>
+    }
 </div>
 <div class="row g-3">
     @foreach (var ageGroup in Model)
@@ -15,13 +18,16 @@
                 <div class="card-body">
                     <h2 class="h5">@ageGroup.Name</h2>
                     <p class="text-muted">Ordem @ageGroup.DisplayOrder · @ageGroup.CompetitionFormat · @ageGroup.MatchDurationMinutes min</p>
-                    <form asp-action="SetDisplayOrder" method="post" class="input-group input-group-sm mb-3">
-                        <input type="hidden" name="id" value="@ageGroup.Id" />
-                        <input type="hidden" name="tournamentId" value="@tournamentId" />
-                        <span class="input-group-text">Ordem pública</span>
-                        <input name="displayOrder" type="number" min="0" class="form-control" value="@ageGroup.DisplayOrder" />
-                        <button class="btn btn-outline-secondary">Guardar</button>
-                    </form>
+                    @if (User.IsInRole("Administrator"))
+                    {
+                        <form asp-action="SetDisplayOrder" method="post" class="input-group input-group-sm mb-3">
+                            <input type="hidden" name="id" value="@ageGroup.Id" />
+                            <input type="hidden" name="tournamentId" value="@tournamentId" />
+                            <span class="input-group-text">Ordem pública</span>
+                            <input name="displayOrder" type="number" min="0" class="form-control" value="@ageGroup.DisplayOrder" />
+                            <button class="btn btn-outline-secondary">Guardar</button>
+                        </form>
+                    }
                     <div class="d-grid gap-2">
                         <a class="btn btn-outline-primary" asp-controller="Teams" asp-action="Index" asp-route-ageGroupId="@ageGroup.Id">Equipas</a>
                         <a class="btn btn-outline-secondary" asp-controller="Schedules" asp-action="Index" asp-route-ageGroupId="@ageGroup.Id">Calendário</a>

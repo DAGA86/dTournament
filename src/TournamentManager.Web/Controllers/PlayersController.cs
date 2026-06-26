@@ -16,10 +16,10 @@ public sealed class PlayersController(PlayerService playerService, TeamRosterSub
         return View(new TeamRosterManagementViewModel(teamId, players, staff));
     }
 
-    [Authorize(Policy = "AdministratorOnly")]
+    [Authorize(Policy = "OperatorOrAdministrator")]
     public IActionResult Create(Guid teamId) => View(new PlayerCreateViewModel { TeamId = teamId });
 
-    [HttpPost, Authorize(Policy = "AdministratorOnly"), ValidateAntiForgeryToken]
+    [HttpPost, Authorize(Policy = "OperatorOrAdministrator"), ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(PlayerCreateViewModel model, CancellationToken cancellationToken)
     {
         if (!ModelState.IsValid) return View(model);
@@ -36,7 +36,7 @@ public sealed class PlayersController(PlayerService playerService, TeamRosterSub
         }
     }
 
-    [HttpPost, Authorize(Policy = "AdministratorOnly"), ValidateAntiForgeryToken]
+    [HttpPost, Authorize(Policy = "OperatorOrAdministrator"), ValidateAntiForgeryToken]
     public async Task<IActionResult> SetActive(Guid id, Guid teamId, bool isActive, CancellationToken cancellationToken)
     {
         await playerService.SetActiveAsync(id, isActive, cancellationToken);
