@@ -14,6 +14,8 @@ public sealed class MatchScheduleService(IAgeGroupRepository ageGroupRepository,
             .Select(ToDto)
             .OrderBy(x => !x.ScheduledStartUtc.HasValue)
             .ThenBy(x => x.ScheduledStartUtc)
+            .ThenBy(x => string.IsNullOrWhiteSpace(x.VenueName))
+            .ThenBy(x => x.VenueName, StringComparer.CurrentCulture)
             .ThenBy(ScheduleSortLabel, StringComparer.CurrentCulture)
             .ToList();
     }

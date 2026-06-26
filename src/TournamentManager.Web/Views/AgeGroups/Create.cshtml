@@ -41,7 +41,7 @@
         </div>
     </div>
     <div class="card"><div class="card-body"><div class="d-flex justify-content-between align-items-center"><h2 class="h5 mb-0">Jogos necessários</h2><button type="button" class="btn btn-sm btn-outline-secondary" id="rebuildMatches">Recalcular</button></div><div id="plannedMatches" class="vstack gap-2 mt-3"></div></div></div>
-    <button class="btn btn-primary btn-lg">Guardar</button>
+    <button class="btn btn-meirinhas btn-lg">Guardar</button>
 </form>
 <script>
     const venues = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(venues.Select(v => new { v.Id, v.Name })));

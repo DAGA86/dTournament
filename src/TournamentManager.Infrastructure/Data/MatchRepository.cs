@@ -16,6 +16,8 @@ public sealed class MatchRepository(ApplicationDbContext dbContext) : IMatchRepo
         .Where(x => x.AgeGroupId == ageGroupId)
         .OrderBy(x => !x.ScheduledStartUtc.HasValue)
         .ThenBy(x => x.ScheduledStartUtc)
+        .ThenBy(x => x.Venue == null || x.Venue.Name == string.Empty)
+        .ThenBy(x => x.Venue == null ? string.Empty : x.Venue.Name)
         .ThenBy(x => x.Group == null ? int.MaxValue : x.Group.DisplayOrder)
         .ThenBy(x => x.Group == null ? x.Phase : TournamentManager.Domain.Enums.CompetitionPhase.GroupStage)
         .ThenBy(x => x.Group == null ? string.Empty : x.Group.Name)
