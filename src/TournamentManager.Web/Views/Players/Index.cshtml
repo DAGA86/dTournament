@@ -1,11 +1,24 @@
-﻿@model IReadOnlyList<PlayerDto>
+﻿@model TeamRosterManagementViewModel
 @{
-    ViewData["Title"] = "Jogadores"; var teamId = (Guid)ViewBag.TeamId;
+    ViewData["Title"] = "Jogadores/Staff";
 }
-<div class="d-flex justify-content-between align-items-center gap-2 mb-3"><h1 class="h3 mb-0">Jogadores</h1><a class="btn btn-meirinhas" asp-action="Create" asp-route-teamId="@teamId">Criar</a></div>
-<div class="list-group shadow-sm">
-    @foreach (var player in Model)
+<div class="d-flex justify-content-between align-items-center gap-2 mb-3">
+    <h1 class="h3 mb-0">Jogadores/Staff</h1>
+    <a class="btn btn-meirinhas" asp-controller="TeamRosters" asp-action="Edit" asp-route-teamId="@Model.TeamId">Editar jogadores/staff</a>
+</div>
+
+<h2 class="h5">Jogadores (@Model.Players.Count)</h2>
+<div class="list-group shadow-sm mb-4">
+    @foreach (var player in Model.Players)
     {
         <div class="list-group-item"><div class="d-flex justify-content-between"><strong>@player.DisplayName</strong><span class="badge @(player.IsActive ? "bg-success" : "bg-secondary")">@(player.IsActive ? "Ativo" : "Inativo")</span></div><div class="text-muted small">@player.FullName · @player.BirthDate.ToString("dd/MM/yyyy") @(player.ShirtNumber.HasValue ? $"· #{player.ShirtNumber}" : string.Empty)</div><form asp-action="SetActive" method="post" class="mt-2"><input type="hidden" name="id" value="@player.Id" /><input type="hidden" name="teamId" value="@player.TeamId" /><input type="hidden" name="isActive" value="@(!player.IsActive)" /><button class="btn btn-sm btn-outline-secondary">@(player.IsActive ? "Desativar" : "Ativar")</button></form></div>
+    }
+</div>
+
+<h2 class="h5">Staff (@Model.StaffMembers.Count)</h2>
+<div class="list-group shadow-sm">
+    @foreach (var staffMember in Model.StaffMembers)
+    {
+        <div class="list-group-item"><div class="d-flex justify-content-between"><strong>@staffMember.FullName</strong><span class="badge @(staffMember.IsActive ? "bg-success" : "bg-secondary")">@(staffMember.IsActive ? "Ativo" : "Inativo")</span></div><div class="text-muted small">@staffMember.Role</div></div>
     }
 </div>

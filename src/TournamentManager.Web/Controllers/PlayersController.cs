@@ -7,12 +7,13 @@ using TournamentManager.Web.ViewModels.Players;
 namespace TournamentManager.Web.Controllers;
 
 [Authorize(Policy = "AuthenticatedViewer")]
-public sealed class PlayersController(PlayerService playerService) : Controller
+public sealed class PlayersController(PlayerService playerService, TeamRosterSubmissionService rosterService) : Controller
 {
     public async Task<IActionResult> Index(Guid teamId, CancellationToken cancellationToken)
     {
-        ViewBag.TeamId = teamId;
-        return View(await playerService.ListByTeamAsync(teamId, cancellationToken));
+        var players = await playerService.ListByTeamAsync(teamId, cancellationToken);
+        var staff = await rosterService.ListStaffAsync(teamId, cancellationToken);
+        return View(new TeamRosterManagementViewModel(teamId, players, staff));
     }
 
     [Authorize(Policy = "AdministratorOnly")]

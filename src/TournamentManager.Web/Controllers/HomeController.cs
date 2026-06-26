@@ -11,6 +11,7 @@ public sealed class HomeController(
     AgeGroupService ageGroupService,
     TeamService teamService,
     PlayerService playerService,
+    TeamRosterSubmissionService rosterService,
     MatchScheduleService matchScheduleService,
     StandingsCalculationService standingsCalculationService,
     KnockoutProgressionService knockoutProgressionService) : Controller
@@ -78,7 +79,8 @@ public sealed class HomeController(
         var finishedMatches = await matchScheduleService.ListFinishedGoalEventsByTeamAsync(id, cancellationToken);
         var goalsByPlayer = finishedMatches.SelectMany(x => x.GoalEvents).Where(x => x.TeamId == id && x.IsActive && !x.IsOwnGoal).GroupBy(x => x.PlayerId).ToDictionary(x => x.Key, x => x.Count());
         var playerSummaries = players.Select(x => new PlayerGoalSummaryViewModel(x.Id, x.DisplayName, x.FullName, x.ShirtNumber, goalsByPlayer.GetValueOrDefault(x.Id))).ToList();
-        return View(new PublicTeamDetailViewModel(team, playerSummaries, matches));
+        var staff = await rosterService.ListStaffAsync(id, cancellationToken);
+        return View(new PublicTeamDetailViewModel(team, playerSummaries, staff, matches));
     }
 
     private async Task<bool> IsPublicAgeGroupAsync(Guid ageGroupId, CancellationToken cancellationToken) =>

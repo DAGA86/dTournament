@@ -6,6 +6,6 @@ public sealed record PublicTournamentIndexViewModel(Guid TournamentId, IReadOnly
 
 public sealed record PublicAgeGroupViewModel(Guid TournamentId, AgeGroupDto AgeGroup);
 
-public sealed record PublicTeamDetailViewModel(TeamDto Team, IReadOnlyList<PlayerGoalSummaryViewModel> Players, IReadOnlyList<MatchDto> Matches);
+public sealed record PublicTeamDetailViewModel(TeamDto Team, IReadOnlyList<PlayerGoalSummaryViewModel> Players, IReadOnlyList<TeamStaffMemberDto> StaffMembers, IReadOnlyList<MatchDto> Matches);
 
 public sealed record PlayerGoalSummaryViewModel(Guid Id, string DisplayName, string FullName, int? ShirtNumber, int Goals);

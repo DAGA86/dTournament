@@ -21,6 +21,19 @@
     </table>
 </div>
 
+<h2 class="h5">Staff</h2>
+<div class="table-responsive card shadow-sm mb-4">
+    <table class="table table-sm align-middle mb-0">
+        <thead><tr><th>Nome</th><th>Função</th></tr></thead>
+        <tbody>
+            @foreach (var staffMember in Model.StaffMembers)
+            {
+                <tr><td>@staffMember.FullName</td><td>@staffMember.Role</td></tr>
+            }
+        </tbody>
+    </table>
+</div>
+
 <h2 class="h5">Calendário da equipa</h2>
 <div class="list-group shadow-sm">
     @foreach (var match in Model.Matches)
