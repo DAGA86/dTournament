@@ -9,14 +9,14 @@ namespace TournamentManager.Web.Controllers;
 [Authorize(Policy = "OperatorOrAdministrator")]
 public sealed class TeamRostersController(TeamRosterSubmissionService rosterService) : Controller
 {
-    [HttpGet]
+    [HttpGet, AllowAnonymous]
     public async Task<IActionResult> Edit(Guid teamId, CancellationToken cancellationToken)
     {
         try { return View(await BuildViewModelAsync(teamId, cancellationToken)); }
         catch (InvalidOperationException) { return NotFound(); }
     }
 
-    [HttpPost, ValidateAntiForgeryToken]
+    [HttpPost, AllowAnonymous, ValidateAntiForgeryToken]
     public async Task<IActionResult> Edit(Guid teamId, TeamRosterSubmissionViewModel model, CancellationToken cancellationToken)
     {
         model.TeamId = teamId;
